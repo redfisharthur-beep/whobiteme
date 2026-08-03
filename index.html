@@ -2,62 +2,72 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
+    <!-- 關鍵：完整適配手機螢幕的縮放與防縮放設定 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>你咬我啊！</title>
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400&display=swap" rel="stylesheet">
     <script src="/socket.io/socket.io.js"></script>
     <style>
+        * {
+            box-sizing: border-box;
+            touch-action: manipulation;
+        }
         body {
             font-family: 'Zen Maru Gothic', sans-serif;
             font-weight: 400;
             text-align: center;
             background-color: #E8ECEF;
             color: #4A5568;
-            margin-top: 20px;
-            font-size: 20px;
+            margin: 0;
+            padding: 10px;
+            font-size: 16px;
         }
         .box {
-            margin: 15px auto;
-            padding: 20px;
-            width: 650px;
+            margin: 10px auto;
+            padding: 15px;
+            width: 100%;
+            max-width: 500px;
             background: #FFFFFF;
             border-radius: 20px;
             box-shadow: 0 10px 25px rgba(108, 122, 137, 0.1);
         }
         input {
-            padding: 10px; margin: 8px 0; width: 80%;
+            padding: 10px; margin: 8px 0; width: 90%;
             background-color: #F4F6F8; border: 2px solid transparent;
-            border-radius: 10px; font-size: 20px; font-family: 'Zen Maru Gothic', sans-serif;
+            border-radius: 10px; font-size: 18px; font-family: 'Zen Maru Gothic', sans-serif;
         }
         button {
-            padding: 10px 16px; margin: 5px; background-color: #8A9A86;
-            color: white; border: none; border-radius: 10px; font-size: 18px;
+            padding: 12px 18px; margin: 6px 4px; background-color: #8A9A86;
+            color: white; border: none; border-radius: 10px; font-size: 16px;
             font-family: 'Zen Maru Gothic', sans-serif; cursor: pointer;
         }
         button:hover { background-color: #72816E; }
-        ul { list-style: none; padding: 0; }
+        ul { list-style: none; padding: 0; margin: 0; }
         li {
-            background: #F7F9FA; margin: 6px auto; padding: 8px 12px; width: 90%;
-            border-radius: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 18px;
+            background: #F7F9FA; margin: 6px auto; padding: 10px; width: 100%;
+            border-radius: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 16px;
         }
         #card-display {
-            margin-top: 10px; background: #FDF6F0; padding: 15px; border-radius: 12px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; color: #D38B5D; font-size: 24px;
+            margin-top: 10px; background: #FDF6F0; padding: 12px; border-radius: 12px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; color: #D38B5D; font-size: 20px;
         }
-        #card-display span.emoji-icon { font-size: 48px; margin-bottom: 5px; }
-        li span span.emoji-icon { font-size: 36px; }
+        #card-display span.emoji-icon { font-size: 40px; margin-bottom: 2px; }
+        li span span.emoji-icon { font-size: 28px; }
         #battle-log {
-            margin-top: 10px; font-size: 15px; color: #6C7A89; background: #F4F6F8;
-            padding: 10px; border-radius: 10px; text-align: left; max-height: 90px; overflow-y: auto;
+            margin-top: 10px; font-size: 14px; color: #6C7A89; background: #F4F6F8;
+            padding: 10px; border-radius: 10px; text-align: left; max-height: 120px; overflow-y: auto;
         }
         .turn-highlight { border: 2px solid #D38B5D; background-color: #FFF9F5 !important; }
+        h1 { font-size: 1.6rem; margin: 10px 0; }
+        h2 { font-size: 1.3rem; }
         h1, h2, p, span, div, small, b, strong { font-weight: 400 !important; }
     </style>
 </head>
 <body>
 
     <!-- 輕音樂開關列 -->
-    <div style="position: absolute; top: 15px; right: 20px;">
-        <button id="music-toggle-btn" onclick="toggleBGM()" style="background-color: #93B5C6; font-size: 14px; padding: 6px 12px;">🎵 開啟輕音樂</button>
+    <div style="position: fixed; top: 10px; right: 10px; z-index: 100;">
+        <button id="music-toggle-btn" onclick="toggleBGM()" style="background-color: #93B5C6; font-size: 13px; padding: 6px 10px;">🎵 開啟輕音樂</button>
     </div>
 
     <h1>🦁 你咬我啊！</h1>
@@ -72,30 +82,32 @@
     </div>
 
     <div id="game-box" class="box" style="display:none;">
-        <h2 id="room-title" style="margin-top:0; color:#7C9082; font-size:24px;"></h2>
-        <div id="deck-info" style="font-size: 16px; color: #8C98A1;"></div>
+        <h2 id="room-title" style="margin-top:0; color:#7C9082;"></h2>
+        <div id="deck-info" style="font-size: 15px; color: #8C98A1;"></div>
         
         <div id="card-display">等待遊戲開始...</div>
-        <div id="turn-banner" style="margin-top: 6px; color: #D38B5D;"></div>
-        <div id="fox-status-banner" style="margin-top: 4px; font-size: 15px; color: #D38B5D;"></div>
+        <div id="turn-banner" style="margin-top: 6px; color: #D38B5D; font-size: 16px;"></div>
+        <div id="fox-status-banner" style="margin-top: 4px; font-size: 14px; color: #D38B5D;"></div>
 
-        <ul id="game-player-list"></ul>
+        <ul id="game-player-list" style="margin-top: 10px;"></ul>
 
         <!-- 行動選單 -->
         <div id="action-panel" style="display:none; margin-top: 10px; background: #EFEFEF; padding: 10px; border-radius: 10px;">
-            <p id="timer-text" style="margin:0 0 4px 0; font-size:16px; color:#C08081;">⏳ 剩餘思考時間：10 秒</p>
-            <p style="margin:0 0 6px 0; font-size:16px;">選擇你的回合行動：</p>
-            <div id="target-selector" style="margin-bottom: 6px;"></div>
-            <button onclick="sendAction('attack')" style="background-color: #D38B5D;">⚔️ 單挑</button>
-            <button onclick="sendAction('group_attack')" style="background-color: #C08081;">🛡️ 發起圍毆</button>
-            <button onclick="sendAction('discard')" style="background-color: #93B5C6;">🔄 棄牌換新 (-1分)</button>
-            <button onclick="sendAction('pass')" style="background-color: #A0A0A0;">💤 Pass</button>
+            <p id="timer-text" style="margin:0 0 4px 0; font-size:15px; color:#C08081;">⏳ 剩餘思考時間：10 秒</p>
+            <p style="margin:0 0 6px 0; font-size:15px;">選擇你的回合行動：</p>
+            <div id="target-selector" style="margin-bottom: 8px;"></div>
+            <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 4px;">
+                <button onclick="sendAction('attack')" style="background-color: #D38B5D; flex: 1; min-width: 40%;">⚔️ 單挑</button>
+                <button onclick="sendAction('group_attack')" style="background-color: #C08081; flex: 1; min-width: 40%;">🛡️ 圍毆</button>
+                <button onclick="sendAction('discard')" style="background-color: #93B5C6; flex: 1; min-width: 40%;">🔄 換牌(-1分)</button>
+                <button onclick="sendAction('pass')" style="background-color: #A0A0A0; flex: 1; min-width: 40%;">💤 Pass</button>
+            </div>
         </div>
 
         <!-- 圍毆投票面板 -->
         <div id="group-vote-panel" style="display:none; margin-top:10px; background:#FFF3CD; padding:10px; border-radius:10px;">
-            <p id="group-vote-text" style="margin:0 0 4px 0; font-size:16px;"></p>
-            <p id="group-timer-text" style="margin:0 0 6px 0; font-size:14px; color:#C08081;">⏳ 剩餘考慮時間：5 秒</p>
+            <p id="group-vote-text" style="margin:0 0 4px 0; font-size:15px;"></p>
+            <p id="group-timer-text" style="margin:0 0 6px 0; font-size:13px; color:#C08081;">⏳ 剩餘考慮時間：5 秒</p>
             <div id="vote-buttons" style="display:none;">
                 <button onclick="voteGroup(true)" style="background-color: #5cb85c;">參加</button>
                 <button onclick="voteGroup(false)" style="background-color: #d9534f;">不參加</button>
@@ -103,7 +115,7 @@
         </div>
 
         <div id="host-controls" style="display:none; margin-top: 10px;">
-            <button onclick="startGame()" style="background-color: #D38B5D;">開始遊戲</button>
+            <button onclick="startGame()" style="background-color: #D38B5D; width: 100%;">開始遊戲</button>
         </div>
 
         <div id="battle-log">📢 遊戲記錄：等待開始...</div>
@@ -126,11 +138,11 @@
             const btn = document.getElementById('music-toggle-btn');
 
             if (bgmPlaying) {
-                btn.innerText = '🔇 關閉輕音樂';
+                btn.innerText = '🔇 關閉音樂';
                 btn.style.backgroundColor = '#C08081';
                 startBGM();
             } else {
-                btn.innerText = '🎵 開啟輕音樂';
+                btn.innerText = '🎵 開啟音樂';
                 btn.style.backgroundColor = '#93B5C6';
                 stopBGM();
             }
@@ -417,7 +429,7 @@
             if (currentTurnId === myId) {
                 actionPanel.style.display = 'block';
                 let otherPlayers = cachedPlayers.filter(p => p.id !== myId);
-                targetSelector.innerHTML = `目標：<select id="target-select" style="font-size:16px; padding:4px;">` +
+                targetSelector.innerHTML = `目標：<select id="target-select" style="font-size:16px; padding:6px; width: 70%;">` +
                     otherPlayers.map(p => `<option value="${p.id}">${p.name}</option>`).join('') +
                     `</select>`;
             } else {
