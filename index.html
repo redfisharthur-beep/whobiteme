@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>你咬我啊！</title>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400&display=swap" rel="stylesheet">
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body {
+            font-family: 'Zen Maru Gothic', sans-serif;
+            font-weight: 400;
+            text-align: center;
+            background-color: #E8ECEF;
+            color: #4A5568;
+            margin-top: 20px;
+            font-size: 20px;
+        }
+        .box {
+            margin: 15px auto;
+            padding: 20px;
+            width: 650px;
+            background: #FFFFFF;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(108, 122, 137, 0.1);
+        }
+        input {
+            padding: 10px; margin: 8px 0; width: 80%;
+            background-color: #F4F6F8; border: 2px solid transparent;
+            border-radius: 10px; font-size: 20px; font-family: 'Zen Maru Gothic', sans-serif;
+        }
+        button {
+            padding: 10px 16px; margin: 5px; background-color: #8A9A86;
+            color: white; border: none; border-radius: 10px; font-size: 18px;
+            font-family: 'Zen Maru Gothic', sans-serif; cursor: pointer;
+        }
+        button:hover { background-color: #72816E; }
+        ul { list-style: none; padding: 0; }
+        li {
+            background: #F7F9FA; margin: 6px auto; padding: 8px 12px; width: 90%;
+            border-radius: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 18px;
+        }
+        #card-display {
+            margin-top: 10px; background: #FDF6F0; padding: 15px; border-radius: 12px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; color: #D38B5D; font-size: 24px;
+        }
+        #card-display span.emoji-icon { font-size: 48px; margin-bottom: 5px; }
+        li span span.emoji-icon { font-size: 36px; }
+        #battle-log {
+            margin-top: 10px; font-size: 15px; color: #6C7A89; background: #F4F6F8;
+            padding: 10px; border-radius: 10px; text-align: left; max-height: 90px; overflow-y: auto;
+        }
+        .turn-highlight { border: 2px solid #D38B5D; background-color: #FFF9F5 !important; }
+        h1, h2, p, span, div, small, b, strong { font-weight: 400 !important; }
+    </style>
+</head>
+<body>
+
+    <!-- 輕音樂開關列 -->
+    <div style="position: absolute; top: 15px; right: 20px;">
+        <button id="music-toggle-btn" onclick="toggleBGM()" style="background-color: #93B5C6; font-size: 14px; padding: 6px 12px;">🎵 開啟輕音樂</button>
+    </div>
+
+    <h1>🦁 你咬我啊！</h1>
+
+    <div id="login-box" class="box">
+        <p>輸入名字開始遊戲</p>
+        <input type="text" id="player-name" placeholder="你的暱稱"><br>
+        <button onclick="createRoom()">建立新房間</button>
+        <div style="margin: 15px 0; border-top: 2px dashed #DDD;"></div>
+        <input type="text" id="room-code" placeholder="4位房間代碼"><br>
+        <button onclick="joinRoom()" style="background-color: #93B5C6;">加入房間</button>
+    </div>
+
+    <div id="game-box" class="box" style="display:none;">
+        <h2 id="room-title" style="margin-top:0; color:#7C9082; font-size:24px;"></h2>
+        <div id="deck-info" style="font-size: 16px; color: #8C98A1;"></div>
+        
+        <div id="card-display">等待遊戲開始...</div>
+        <div id="turn-banner" style="margin-top: 6px; color: #D38B5D;"></div>
+        <div id="fox-status-banner" style="margin-top: 4px; font-size: 15px; color: #D38B5D;"></div>
+
+        <ul id="game-player-list"></ul>
+
+        <!-- 行動選單 -->
+        <div id="action-panel" style="display:none; margin-top: 10px; background: #EFEFEF; padding: 10px; border-radius: 10px;">
+            <p id="timer-text" style="margin:0 0 4px 0; font-size:16px; color:#C08081;">⏳ 剩餘思考時間：10 秒</p>
+            <p style="margin:0 0 6px 0; font-size:16px;">選擇你的回合行動：</p>
+            <div id="target-selector" style="margin-bottom: 6px;"></div>
+            <button onclick="sendAction('attack')" style="background-color: #D38B5D;">⚔️ 單挑</button>
+            <button onclick="sendAction('group_attack')" style="background-color: #C08081;">🛡️ 發起圍毆</button>
+            <button onclick="sendAction('discard')" style="background-color: #93B5C6;">🔄 棄牌換新 (-1分)</button>
+            <button onclick="sendAction('pass')" style="background-color: #A0A0A0;">💤 Pass</button>
+        </div>
+
+        <!-- 圍毆投票面板 -->
+        <div id="group-vote-panel" style="display:none; margin-top:10px; background:#FFF3CD; padding:10px; border-radius:10px;">
+            <p id="group-vote-text" style="margin:0 0 4px 0; font-size:16px;"></p>
+            <p id="group-timer-text" style="margin:0 0 6px 0; font-size:14px; color:#C08081;">⏳ 剩餘考慮時間：5 秒</p>
+            <div id="vote-buttons" style="display:none;">
+                <button onclick="voteGroup(true)" style="background-color: #5cb85c;">參加</button>
+                <button onclick="voteGroup(false)" style="background-color: #d9534f;">不參加</button>
+            </div>
+        </div>
+
+        <div id="host-controls" style="display:none; margin-top: 10px;">
+            <button onclick="startGame()" style="background-color: #D38B5D;">開始遊戲</button>
+        </div>
+
+        <div id="battle-log">📢 遊戲記錄：等待開始...</div>
+    </div>
+
+    <script>
+        const socket = io();
+        let myRoomCode = '', myId = '', currentTurnId = '', cachedPlayers = [];
+        let turnTimer = null, countdownTimer = null, groupVoteTimer = null, groupCountdownTimer = null;
+        let timeLeft = 10, groupTimeLeft = 5;
+
+        let bgmPlaying = false;
+        let bgmInterval = null;
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function toggleBGM() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            bgmPlaying = !bgmPlaying;
+            const btn = document.getElementById('music-toggle-btn');
+
+            if (bgmPlaying) {
+                btn.innerText = '🔇 關閉輕音樂';
+                btn.style.backgroundColor = '#C08081';
+                startBGM();
+            } else {
+                btn.innerText = '🎵 開啟輕音樂';
+                btn.style.backgroundColor = '#93B5C6';
+                stopBGM();
+            }
+        }
+
+        function startBGM() {
+            if (bgmInterval) clearInterval(bgmInterval);
+            const chordNotes = [
+                [261.63, 329.63, 392.00],
+                [220.00, 261.63, 329.63],
+                [174.61, 220.00, 261.63],
+                [196.00, 246.94, 293.66]
+            ];
+            let step = 0;
+
+            bgmInterval = setInterval(() => {
+                if (!bgmPlaying) return;
+                const notes = chordNotes[step % chordNotes.length];
+                notes.forEach((freq, idx) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.1);
+
+                    gain.gain.setValueAtTime(0.03, audioCtx.currentTime + idx * 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + idx * 0.1 + 1.2);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    osc.start(audioCtx.currentTime + idx * 0.1);
+                    osc.stop(audioCtx.currentTime + idx * 0.1 + 1.5);
+                });
+                step++;
+            }, 2500);
+        }
+
+        function stopBGM() {
+            if (bgmInterval) {
+                clearInterval(bgmInterval);
+                bgmInterval = null;
+            }
+        }
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            if (type === 'win') {
+                const notes = [523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((freq, index) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime + index * 0.08);
+                    
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime + index * 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + index * 0.08 + 0.2);
+                    
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    
+                    osc.start(audioCtx.currentTime + index * 0.08);
+                    osc.stop(audioCtx.currentTime + index * 0.08 + 0.25);
+                });
+            } else if (type === 'lose') {
+                const notes = [300, 240, 180];
+                notes.forEach((freq, index) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime + index * 0.15);
+                    
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime + index * 0.15);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + index * 0.15 + 0.3);
+                    
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    
+                    osc.start(audioCtx.currentTime + index * 0.15);
+                    osc.stop(audioCtx.currentTime + index * 0.15 + 0.35);
+                });
+            }
+        }
+
+        socket.on('connect', () => { myId = socket.id; });
+
+        function createRoom() {
+            const name = document.getElementById('player-name').value.trim();
+            if (!name) return alert('請輸入暱稱！');
+            socket.emit('create_room', name);
+        }
+
+        function joinRoom() {
+            const name = document.getElementById('player-name').value.trim();
+            const code = document.getElementById('room-code').value.trim().toUpperCase();
+            if (!name || !code) return alert('請填寫完整！');
+            myRoomCode = code;
+            socket.emit('join_room', { roomCode: code, playerName: name });
+        }
+
+        socket.on('room_created', (data) => {
+            myRoomCode = data.roomCode;
+            showGameUI(`房間代碼：${myRoomCode}`);
+            document.getElementById('host-controls').style.display = 'block';
+        });
+
+        socket.on('update_players', (players) => {
+            if (document.getElementById('game-box').style.display === 'none') showGameUI(`房間代碼：${myRoomCode}`);
+            cachedPlayers = players;
+            renderUI();
+        });
+
+        socket.on('sync_players', (data) => {
+            clearTurnTimers();
+            hideGroupVotePanel();
+            cachedPlayers = data.players;
+            currentTurnId = data.currentTurnId;
+            document.getElementById('deck-info').innerText = `牌庫剩餘: ${data.deckCount} 張`;
+            renderUI();
+            startTurnTimer();
+        });
+
+        socket.on('game_started_signal', () => {});
+
+        socket.on('start_group_vote', (data) => {
+            document.getElementById('group-vote-panel').style.display = 'block';
+            document.getElementById('group-vote-text').innerText = `🛡️ ${data.initiator} 發起圍毆 ${data.targetName}！`;
+            startGroupTimer();
+        });
+
+        socket.on('prompt_group_vote', (data) => {
+            document.getElementById('group-vote-panel').style.display = 'block';
+            document.getElementById('group-vote-text').innerText = `🔔 提醒：${data.initiator} 正在圍毆 ${data.targetName}，是否參加？`;
+            document.getElementById('vote-buttons').style.display = 'block';
+        });
+
+        socket.on('append_log', (msg) => {
+            const log = document.getElementById('battle-log');
+            log.innerHTML = msg + '<br>' + log.innerHTML;
+        });
+
+        socket.on('play_sound', (type) => { playSound(type); });
+
+        socket.on('game_over', (players) => {
+            clearTurnTimers();
+            hideGroupVotePanel();
+            stopBGM();
+            players.sort((a, b) => b.score - a.score);
+            
+            let rankText = '🏆 牌庫抽完，遊戲結束！最終排名：\n\n' + players.map((p, idx) => {
+                let medal = '';
+                if (idx === 0) medal = '🥇 ';
+                else if (idx === 1) medal = '🥈 ';
+                else if (idx === 2) medal = '🥉 ';
+                else medal = `第 ${idx+1} 名: `;
+                return `${medal}${p.name} (${p.score}分)`;
+            }).join('\n');
+            
+            alert(rankText);
+        });
+
+        socket.on('error_message', (msg) => { alert(msg); });
+
+        function showGameUI(titleText) {
+            document.getElementById('login-box').style.display = 'none';
+            document.getElementById('game-box').style.display = 'block';
+            document.getElementById('room-title').innerText = titleText;
+        }
+
+        function startGame() { socket.emit('start_game', myRoomCode); }
+
+        function sendAction(actionType) {
+            clearTurnTimers();
+            let targetId = null;
+            if (actionType === 'attack' || actionType === 'group_attack') {
+                const select = document.getElementById('target-select');
+                if (select) targetId = select.value;
+                if (!targetId) return alert('請選擇目標！');
+            }
+            socket.emit('player_action', { roomCode: myRoomCode, actionType, targetId });
+        }
+
+        function voteGroup(join) {
+            socket.emit('respond_group', { roomCode: myRoomCode, join });
+            document.getElementById('vote-buttons').style.display = 'none';
+            document.getElementById('group-vote-text').innerText = join ? '✅ 已選擇參加圍毆！等待結算...' : '❌ 已選擇不參加圍毆。';
+        }
+
+        function clearTurnTimers() {
+            if (turnTimer) clearTimeout(turnTimer);
+            if (countdownTimer) clearInterval(countdownTimer);
+        }
+
+        function hideGroupVotePanel() {
+            document.getElementById('group-vote-panel').style.display = 'none';
+            document.getElementById('vote-buttons').style.display = 'none';
+            if (groupVoteTimer) clearTimeout(groupVoteTimer);
+            if (groupCountdownTimer) clearInterval(groupCountdownTimer);
+        }
+
+        function startTurnTimer() {
+            if (currentTurnId === myId) {
+                timeLeft = 10;
+                document.getElementById('timer-text').innerText = `⏳ 剩餘思考時間：${timeLeft} 秒`;
+                
+                countdownTimer = setInterval(() => {
+                    timeLeft--;
+                    if (timeLeft >= 0) {
+                        document.getElementById('timer-text').innerText = `⏳ 剩餘思考時間：${timeLeft} 秒`;
+                    }
+                }, 1000);
+
+                turnTimer = setTimeout(() => {
+                    clearTurnTimers();
+                    if (currentTurnId === myId) {
+                        socket.emit('timeout_action', { roomCode: myRoomCode });
+                    }
+                }, 10000);
+            }
+        }
+
+        function startGroupTimer() {
+            groupTimeLeft = 5;
+            document.getElementById('group-timer-text').innerText = `⏳ 剩餘考慮時間：${groupTimeLeft} 秒`;
+
+            if (groupCountdownTimer) clearInterval(groupCountdownTimer);
+            groupCountdownTimer = setInterval(() => {
+                groupTimeLeft--;
+                if (groupTimeLeft >= 0) {
+                    document.getElementById('group-timer-text').innerText = `⏳ 剩餘考慮時間：${groupTimeLeft} 秒`;
+                }
+            }, 1000);
+
+            if (groupVoteTimer) clearTimeout(groupVoteTimer);
+            groupVoteTimer = setTimeout(() => {
+                hideGroupVotePanel();
+            }, 5000);
+        }
+
+        function renderUI() {
+            const list = document.getElementById('game-player-list');
+            const turnBanner = document.getElementById('turn-banner');
+            const foxBanner = document.getElementById('fox-status-banner');
+            const actionPanel = document.getElementById('action-panel');
+            const targetSelector = document.getElementById('target-selector');
+            const cardDisplay = document.getElementById('card-display');
+            let activePlayerName = '';
+
+            let maxFoxTurns = 0;
+            cachedPlayers.forEach(p => {
+                if (p.id !== myId && p.foxVisionTurnsLeft > maxFoxTurns) {
+                    maxFoxTurns = p.foxVisionTurnsLeft;
+                }
+            });
+
+            if (maxFoxTurns > 0) {
+                foxBanner.innerText = `🦊 狐狸特權生效中：看穿所有對手手牌 (剩餘 ${maxFoxTurns} 個回合)`;
+            } else {
+                foxBanner.innerText = '';
+            }
+
+            list.innerHTML = cachedPlayers.map(p => {
+                let isMyTurn = (p.id === currentTurnId);
+                if (isMyTurn) activePlayerName = p.name;
+                
+                let displayHtml = '❓';
+                if (p.card) {
+                    displayHtml = `<span class="emoji-icon">${p.card.emoji}</span> <small>(${p.card.name})</small>`;
+                }
+
+                return `
+                    <li class="${isMyTurn ? 'turn-highlight' : ''}">
+                        <span>${displayHtml} <span>${p.name}</span> [得分: ${p.score}]</span>
+                        ${isMyTurn ? '<span style="color:#D38B5D;">⭐ 回合中</span>' : ''}
+                    </li>`;
+            }).join('');
+
+            const me = cachedPlayers.find(p => p.id === myId);
+            if (me && me.card) {
+                cardDisplay.innerHTML = `<span class="emoji-icon">${me.card.emoji}</span>你的卡牌：${me.card.name} (${me.card.points}分)`;
+            }
+
+            turnBanner.innerText = `現在是 【${activePlayerName}】 的回合`;
+            if (currentTurnId === myId) {
+                actionPanel.style.display = 'block';
+                let otherPlayers = cachedPlayers.filter(p => p.id !== myId);
+                targetSelector.innerHTML = `目標：<select id="target-select" style="font-size:16px; padding:4px;">` +
+                    otherPlayers.map(p => `<option value="${p.id}">${p.name}</option>`).join('') +
+                    `</select>`;
+            } else {
+                actionPanel.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
