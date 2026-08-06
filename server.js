@@ -38,13 +38,29 @@ function createDeck() {
     return deck;
 }
 
+function getWaitingRooms() {
+    let list = [];
+    Object.keys(rooms).forEach(code => {
+        if (rooms[code].status === 'waiting') {
+            list.push({
+                code: code,
+                hostName: rooms[code].players[0] ? rooms[code].players[0].name : '房主',
+                playerCount: rooms[code].players.length
+            });
+        }
+    });
+    return list;
+}
+
+function broadcastRoomList() {
+    io.emit('update_room_list', getWaitingRooms());
+}
+
 function getClientFilteredPlayers(room, viewerId) {
     return room.players.map(p => {
         const isSelf = (p.id === viewerId);
-        
         const foxExpiry = room.foxVisionExpiry && room.foxVisionExpiry[viewerId] && room.foxVisionExpiry[viewerId][p.id];
         const hasFoxVision = foxExpiry && foxExpiry > 0;
-
         const knowsCard = isSelf || hasFoxVision || (p.knownCards && p.knownCards[viewerId]);
         return {
             id: p.id,
@@ -71,6 +87,8 @@ io.on('connection', (socket) => {
         return Math.random().toString(36).substring(2, 6).toUpperCase();
     }
 
+    socket.emit('update_room_list', getWaitingRooms());
+
     socket.on('create_room', (playerName) => {
         const roomCode = generateRoomCode();
         rooms[roomCode] = {
@@ -85,6 +103,7 @@ io.on('connection', (socket) => {
         };
         socket.join(roomCode);
         socket.emit('room_created', { roomCode });
+        broadcastRoomList();
     });
 
     socket.on('join_room', ({ roomCode, playerName }) => {
@@ -95,6 +114,7 @@ io.on('connection', (socket) => {
         room.players.push({ id: socket.id, name: playerName, card: null, score: 0, knownCards: {} });
         socket.join(roomCode);
         
+        broadcastRoomList();
         room.players.forEach(p => {
             io.to(p.id).emit('update_players', getClientFilteredPlayers(room, p.id));
         });
@@ -115,6 +135,7 @@ io.on('connection', (socket) => {
             p.knownCards[p.id] = true;
         });
 
+        broadcastRoomList();
         broadcastRoomState(room);
         io.to(roomCode).emit('game_started_signal');
     });
@@ -137,6 +158,7 @@ io.on('connection', (socket) => {
         if (room.deck.length === 0) {
             room.status = 'ended';
             io.to(room.code).emit('game_over', room.players);
+            broadcastRoomList();
         } else {
             broadcastRoomState(room);
         }
@@ -223,17 +245,11 @@ io.on('connection', (socket) => {
         revealCardBetween(target, actor);
 
         let participantDetails = participants.map(p => `${p.name}(${p.card.emoji} ${p.card.name})`).join(', ');
-        
-        // 檢查是否有「狡兔三窟」條件：圍毆方有 2 張或以上的兔子 (isRabbit)
         const rabbits = participants.filter(p => p.card.isRabbit);
         let log = '';
 
         if (rabbits.length >= 2) {
-            // 發動狡兔三窟技能：直接打敗被圍毆者，兩張兔子各得 5 分
-            rabbits.forEach(r => {
-                r.score += 5;
-            });
-
+            rabbits.forEach(r => { r.score += 5; });
             log = `🐰 【狡兔三窟】參與者中包含 ${rabbits.length} 張兔子！發動狡兔三窟技能，直接打敗被圍毆者 ${target.name}！每隻兔子獲得 5 分。`;
             participants.forEach(p => io.to(p.id).emit('play_sound', 'win'));
             io.to(target.id).emit('play_sound', 'lose');
@@ -252,7 +268,6 @@ io.on('connection', (socket) => {
                 target.knownCards = {};
                 target.knownCards[target.id] = true;
             }
-
         } else {
             let totalTeamPower = participants.reduce((sum, p) => sum + p.card.points, 0);
             let targetPower = target.card.points;
@@ -306,7 +321,6 @@ io.on('connection', (socket) => {
 
         const actor = room.players.find(p => p.id === socket.id);
         if (!actor) return;
-        room.code = roomCode;
 
         if (actor.card.isBacteria && (actionType === 'attack' || actionType === 'group_attack')) {
             return socket.emit('error_message', '細菌牌無法發起單挑或圍毆！');
@@ -415,8 +429,13 @@ io.on('connection', (socket) => {
             executeDuel(room, actor, target, roomCode);
         }
     });
+
+    socket.on('disconnect', () => {
+        broadcastRoomList();
+    });
 });
 
-server.listen(3000, () => {
-    console.log('伺服器已啟動！');
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`伺服器已在 port ${PORT} 順利啟動！`);
 });
