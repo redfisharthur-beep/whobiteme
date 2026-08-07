@@ -58,13 +58,11 @@
             border: none;
         }
         
-        /* 溫和流暢的旋轉動畫 */
         @keyframes rotateBorder {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
 
-        /* 小型精緻的圓框容器 */
         .card-container-wrapper {
             position: relative;
             width: 192px;
@@ -78,7 +76,6 @@
             margin: 0 auto;
         }
 
-        /* 旋轉外框層 */
         .card-container-wrapper::before {
             content: '';
             position: absolute;
@@ -88,7 +85,7 @@
             bottom: 0;
             z-index: 0;
             border-radius: 50%;
-            animation: rotateBorder 10s linear infinite; /* 放慢旋轉速度，柔和舒適 */
+            animation: rotateBorder 10s linear infinite;
         }
 
         .card-container-wrapper .pokemon-card-img {
@@ -102,7 +99,6 @@
             box-shadow: 0 0 10px rgba(0,0,0,0.2);
         }
 
-        /* ----- 指定色彩配置 ----- */
         .bg-tiger::before { background: repeating-conic-gradient(#ff3333 0deg 20deg, #ffffff 20deg 40deg); }
         .bg-bear::before { background: repeating-conic-gradient(#ffcc00 0deg 20deg, #ffffff 20deg 40deg); }
         .bg-lion::before { background: repeating-conic-gradient(#00cc66 0deg 20deg, #ffffff 20deg 40deg); }
@@ -115,7 +111,6 @@
         
         .bg-hunter::before { background: repeating-conic-gradient(#ff3333 0deg 20deg, #ffea00 20deg 40deg, #ffffff 40deg 60deg); }
         .bg-virus::before { background: repeating-conic-gradient(#ff1744 0deg 15deg, #ffea00 15deg 30deg, #00e676 30deg 45deg, #00b0ff 45deg 60deg); animation: rotateBorder 8s linear infinite; }
-        /* ----------------------- */
 
         .morandi-score {
             font-family: 'Montserrat', sans-serif;
@@ -133,36 +128,52 @@
             color: #9C4A4A;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
             margin-right: 12px;
-            font-size: 2.2em;
+            font-size: 1.8em;
             display: inline-block;
         }
 
         .list-player-name {
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             font-weight: 500;
-            margin-left: 12px;
+            margin-left: 8px;
             color: #2D3748;
         }
 
-        .list-total-score {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #3182CE;
-            text-shadow: 2px 2px 4px rgba(49, 130, 206, 0.25);
-            font-family: 'Zen Maru Gothic', sans-serif;
-            letter-spacing: 1px;
+        .list-right-group {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        li .pokemon-mini-img {
-            width: 48px; 
-            height: 48px; 
-            object-fit: cover; 
+        .list-total-score {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #3182CE;
+            text-shadow: 1px 1px 2px rgba(49, 130, 206, 0.25);
+            font-family: 'Zen Maru Gothic', sans-serif;
+            letter-spacing: 0.5px;
+        }
+
+        li .pokemon-mini-container {
+            width: 60px; 
+            height: 60px; 
             border-radius: 50%; 
+            overflow: hidden;
+            display: inline-block;
             vertical-align: middle; 
             margin-right: 4px; 
             background: #fff; 
-            border: none;
+            box-shadow: 0 0 6px rgba(0,0,0,0.15);
+            flex-shrink: 0;
         }
+
+        li .pokemon-mini-img {
+            width: 60px; 
+            height: 60px; 
+            object-fit: cover;
+        }
+
         #battle-log {
             margin-top: 12px; font-size: 16px; font-weight: 300; color: #4A5568; background: #F7F9FA;
             padding: 14px; border-radius: 12px; text-align: left; max-height: 150px; overflow-y: auto;
@@ -452,10 +463,6 @@
         socket.on('append_log', (msg) => {
             let cleanMsg = msg;
 
-            let defeatMatch = cleanMsg.match(/(.*?)\s*(?:輸給了|被擊敗)\s*(?:.*?)[，,].*?(?:牌面是「?(獅|噴火龍)」?)/);
-            if (!defeatMatch) {
-                defeatMatch = cleanMsg.match(/(.*?)\s*(?:的)?(獅|噴火龍).*?被擊敗/);
-            }
             if (cleanMsg.includes('獅') || cleanMsg.includes('噴火龍')) {
                 if (cleanMsg.includes('輸給了') || cleanMsg.includes('擊敗') || cleanMsg.includes('同歸於盡')) {
                     let targetNameMatch = cleanMsg.match(/【(?:單挑|圍毆)失败】\s*(.*?)\s*輸給了/);
@@ -479,60 +486,23 @@
                 if (!playerMatch) playerMatch = cleanMsg.match(/(.*?)\s*換牌/);
                 if (!playerMatch) playerMatch = cleanMsg.match(/【(?:.*?)(?:特權|技能)】\s*(.*?)\s*捨棄了/);
                 let playerName = playerMatch ? playerMatch[1].trim() : '玩家';
-                cleanMsg = `${playerName} 棄牌(-1分)，並發動【無所遁形】技能，可看穿所有對手底牌 3回合！`;
+                cleanMsg = `🔄【棄牌】${playerName} 棄牌換新卡 (-1分)。並發動【無所遁形】技能，可看穿所有對手底牌 3回合！`;
             }
 
-            if (cleanMsg.includes('圍毆') && (cleanMsg.includes('兔子') || cleanMsg.includes('兔') || cleanMsg.includes('可達鴨'))) {
-                let participantsMatch = cleanMsg.match(/參與者\s*\[(.*?)\]/);
-                if (participantsMatch) {
-                    let rawParticipants = participantsMatch[1];
-                    let parts = rawParticipants.split(',').map(s => {
-                        let namePart = s.replace(/\(.*?\)/g, '').trim();
-                        let found = cachedPlayers.find(p => p.id === namePart || p.name === namePart);
-                        return found ? found.name : namePart;
-                    });
-                    let rabbitPlayers = [];
-                    parts.forEach(pName => {
-                        let pObj = cachedPlayers.find(p => p.name === pName);
-                        if (pObj && pObj.card && (pObj.card.name === '兔子' || pObj.card.name === '兔' || pObj.card.name === '可達鴨')) {
-                            rabbitPlayers.push(pName);
-                        }
-                    });
-                    if (rabbitPlayers.length >= 2) {
-                        cleanMsg = `🐰 ${rabbitPlayers.join('及')}，發動兩個臭皮匠技能`;
-                    }
-                }
+            if (cleanMsg.includes('【圍毆成功】')) {
+                cleanMsg = `🛡️ 【圍毆成功】參與者發動【臭皮匠技能】✨擊敗目標`;
             }
 
             let singleMatch = cleanMsg.match(/【單挑】\s*(.*?)\s*(?:輸給了|擊敗了)\s*(.*?)[，,]/);
-            if (singleMatch && !cleanMsg.includes('同歸於盡')) {
+            if (singleMatch) {
                 let p1 = singleMatch[1].trim();
                 let p2 = singleMatch[2].trim();
-                if (cleanMsg.includes('輸給了')) {
+                if (cleanMsg.includes('同歸於盡')) {
+                    cleanMsg = `⚔️ 【單挑】 ${p1} 獲勝，但對方發動發動【同歸於盡】技能✨`;
+                } else if (cleanMsg.includes('輸給了')) {
                     cleanMsg = `⚔️ 【單挑】 ${p2} 獲勝`;
                 } else {
                     cleanMsg = `⚔️ 【單挑】 ${p1} 獲勝`;
-                }
-            }
-
-            if (cleanMsg.includes('【圍毆成功】') && !cleanMsg.includes('臭皮匠')) {
-                let participantsMatch = cleanMsg.match(/參與者\s*\[(.*?)\]/);
-                let winnerMatch = cleanMsg.match(/牌面最小的\s*(.*?)\s*獲得\s*(\d+)\s*分/);
-                
-                if (participantsMatch && winnerMatch) {
-                    let rawParticipants = participantsMatch[1];
-                    let parts = rawParticipants.split(',').map(s => {
-                        let namePart = s.replace(/\(.*?\)/g, '').trim();
-                        let found = cachedPlayers.find(p => p.id === namePart || p.name === namePart);
-                        return found ? found.name : namePart;
-                    });
-                    
-                    let winnerRaw = winnerMatch[1].trim();
-                    let winnerFound = cachedPlayers.find(p => p.id === winnerRaw || p.name === winnerRaw);
-                    let winnerName = winnerFound ? winnerFound.name : winnerRaw;
-                    let points = winnerMatch[2];
-
-                    cleanMsg = `🛡️ 【圍毆成功】參與者 (${parts.join('、')}) 擊敗目標，${winnerName} 獲得 ${points} 分`;
                 }
             }
 
@@ -666,7 +636,7 @@
                 let displayHtml = '<span class="list-score-tag">?</span>';
                 if (p.card) {
                     let pokeData = pokemonDataMapping[p.card.name] || { img: '', points: p.card.points, bgClass: 'bg-rabbit' };
-                    displayHtml = `<div class="pokemon-mini-img ${pokeData.bgClass}" style="display:inline-block; border-radius:50%; vertical-align:middle; margin-right:4px; overflow:hidden;"><img src="${pokeData.img}" style="width:48px; height:48px; object-fit:cover;" alt="pokemon"></div> <span class="list-score-tag">${pokeData.points}</span>`;
+                    displayHtml = `<div class="pokemon-mini-container"><img src="${pokeData.img}" class="pokemon-mini-img" alt="pokemon"></div><span class="list-score-tag">${pokeData.points}</span>`;
                 }
 
                 return `
@@ -675,9 +645,9 @@
                             ${displayHtml}
                             <span class="list-player-name">${p.name}</span>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 10px;">
+                        <div class="list-right-group">
                             <span class="list-total-score">【得分: ${p.score}】</span>
-                            ${isMyTurn ? '<span style="color:#D69E2E; font-weight:400;">⭐ 回合中</span>' : ''}
+                            ${isMyTurn ? '<span style="color:#D69E2E; font-weight:400; font-size: 0.9rem;">⭐ 回合中</span>' : ''}
                         </div>
                     </li>`;
             }).join('');

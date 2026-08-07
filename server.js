@@ -245,21 +245,27 @@ io.on('connection', (socket) => {
         revealCardBetween(target, actor);
 
         let participantDetails = participants.map(p => `${p.name}(${p.card.emoji} ${p.card.name})`).join(', ');
-        const rabbits = participants.filter(p => p.card.isRabbit);
+        let totalTeamPower = participants.reduce((sum, p) => sum + p.card.points, 0);
+        let targetPower = target.card.points;
+
         let log = '';
 
-        if (rabbits.length >= 2) {
-            rabbits.forEach(r => { r.score += 5; });
-            log = `🐰 【狡兔三窟】參與者中包含 ${rabbits.length} 張兔子！發動狡兔三窟技能，直接打敗被圍毆者 ${target.name}！每隻兔子獲得 5 分。`;
+        // 總分合計 < 5 時，發動臭皮匠技能強制獲勝，由圍毆方最高分拿走積分
+        if (totalTeamPower < 5 && !target.card.isBacteria) {
+            participants.sort((a, b) => b.card.points - a.card.points);
+            let highestWinner = participants[0];
+            highestWinner.score += target.card.points;
+
+            log = `🛡️ 【圍毆成功】參與者發動【臭皮匠技能】✨擊敗目標 ${target.name}！牌面最大的 ${highestWinner.name} 獲得 ${target.card.points} 分。`;
             participants.forEach(p => io.to(p.id).emit('play_sound', 'win'));
             io.to(target.id).emit('play_sound', 'lose');
 
             if (target.card.isLion) {
-                log += ` 🦁【獅之同歸於盡】${target.name} 的獅在圍攻下倒下，發動反撲與牌面最小的 ${rabbits[0].name} 同時更換手牌！`;
+                log += ` 🦁【獅之同歸於盡】${target.name} 的獅在圍攻下倒下，發動反撲與牌面最大的 ${highestWinner.name} 同時更換手牌！`;
                 if (room.deck.length > 0) {
-                    rabbits[0].card = room.deck.pop();
-                    rabbits[0].knownCards = {};
-                    rabbits[0].knownCards[rabbits[0].id] = true;
+                    highestWinner.card = room.deck.pop();
+                    highestWinner.knownCards = {};
+                    highestWinner.knownCards[highestWinner.id] = true;
                 }
             }
 
@@ -269,9 +275,6 @@ io.on('connection', (socket) => {
                 target.knownCards[target.id] = true;
             }
         } else {
-            let totalTeamPower = participants.reduce((sum, p) => sum + p.card.points, 0);
-            let targetPower = target.card.points;
-
             if (target.card.isHunter) {
                 targetPower += participants.length;
             }
