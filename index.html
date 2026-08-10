@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>寶可夢嘎嘎</title>
+    <title>卡牌比大小</title>
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@300;400;500;700&family=Montserrat:wght@900&display=swap" rel="stylesheet">
     <script src="/socket.io/socket.io.js"></script>
     <style>
@@ -102,13 +102,11 @@
         .bg-tiger::before { background: repeating-conic-gradient(#ff3333 0deg 20deg, #ffffff 20deg 40deg); }
         .bg-bear::before { background: repeating-conic-gradient(#ffcc00 0deg 20deg, #ffffff 20deg 40deg); }
         .bg-lion::before { background: repeating-conic-gradient(#00cc66 0deg 20deg, #ffffff 20deg 40deg); }
-        
         .bg-leopard::before { background: linear-gradient(135deg, #ff3333, #b30000); animation: none; }
         .bg-wolf::before { background: linear-gradient(135deg, #ffd700, #cc9900); animation: none; }
         .bg-fox::before { background: linear-gradient(135deg, #00e676, #00897b); animation: none; }
         .bg-snake::before { background: linear-gradient(135deg, #00b0ff, #1565c0); animation: none; }
         .bg-rabbit::before { background: linear-gradient(135deg, #ffffff, #e0e0e0); animation: none; }
-        
         .bg-hunter::before { background: repeating-conic-gradient(#ff3333 0deg 20deg, #ffea00 20deg 40deg, #ffffff 40deg 60deg); }
         .bg-virus::before { background: repeating-conic-gradient(#ff1744 0deg 15deg, #ffea00 15deg 30deg, #00e676 30deg 45deg, #00b0ff 45deg 60deg); animation: rotateBorder 8s linear infinite; }
 
@@ -194,31 +192,21 @@
             justify-content: center;
             align-items: center;
         }
-        .header-logo {
-            width: 100%;
-            height: auto;
-            object-fit: contain;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4));
-        }
     </style>
 </head>
 <body>
 
     <div style="position: fixed; top: 10px; right: 10px; z-index: 100;">
-        <button id="music-toggle-btn" onclick="toggleBGM()" style="background-color: #3B4CCA; font-size: 13px; padding: 6px 12px;">🎵 開啟音樂</button>
-    </div>
-
-    <div class="header-logo-container">
-        <img src="/bite-game/pokemom.png" class="header-logo" alt="寶可夢嘎嘎">
+        <button id="music-toggle-btn" onclick="toggleBGM()" style="background-color: #3B4CCA; font-size: 13px; padding: 6px 12px;">開啟音樂</button>
     </div>
 
     <div id="login-box" class="box">
-        <p style="font-weight: 400; color: #2D3748;">輸入你的訓練家暱稱</p>
-        <input type="text" id="player-name" placeholder="例如：小智"><br>
+        <p style="font-weight: 400; color: #2D3748;">輸入你的玩家暱稱</p>
+        <input type="text" id="player-name" placeholder="例如：玩家一"><br>
         <button onclick="createRoom()" style="background-color: #CC0000; width: 90%;">建立新房間</button>
         
         <div style="margin: 15px 0; border-top: 2px dashed #CBD5E0;"></div>
-        <p style="margin-bottom: 5px; font-weight: 400;">可用訓練家房間（點擊直接加入）：</p>
+        <p style="margin-bottom: 5px; font-weight: 400;">可用房間（點擊直接加入）：</p>
         <div id="room-list-container" style="max-height: 160px; overflow-y: auto; padding: 5px;">
             <p style="color: #A0AEC0; font-size: 14px;">目前沒有等待中的房間...</p>
         </div>
@@ -234,20 +222,20 @@
         <ul id="game-player-list" style="margin-top: 10px;"></ul>
 
         <div id="action-panel" style="display:none; margin-top: 10px; background: #EDF2F7; padding: 12px; border-radius: 14px; border: 1px solid #CBD5E0;">
-            <p id="timer-text" style="margin:0 0 4px 0; font-size:15px; color:#E53E3E; font-weight:400;">⏳ 剩餘思考時間：10 秒</p>
+            <p id="timer-text" style="margin:0 0 4px 0; font-size:15px; color:#E53E3E; font-weight:400;">剩餘思考時間：10 秒</p>
             <p style="margin:0 0 6px 0; font-size:15px; font-weight: 400;">選擇你的回合行動：</p>
             <div id="target-selector" style="margin-bottom: 8px;"></div>
             <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 6px;">
-                <button onclick="sendAction('attack')" style="background-color: #DD6B20; flex: 1; min-width: 40%;">⚔️ 單挑</button>
-                <button onclick="sendAction('group_attack')" style="background-color: #E53E3E; flex: 1; min-width: 40%;">🛡️ 圍毆</button>
-                <button onclick="sendAction('discard')" style="background-color: #3182CE; flex: 1; min-width: 40%;">🔄 換牌(-1分)</button>
-                <button onclick="sendAction('pass')" style="background-color: #718096; flex: 1; min-width: 40%;">💤 Pass</button>
+                <button onclick="sendAction('attack')" style="background-color: #DD6B20; flex: 1; min-width: 40%;">單挑</button>
+                <button onclick="sendAction('group_attack')" style="background-color: #E53E3E; flex: 1; min-width: 40%;">圍毆</button>
+                <button onclick="sendAction('discard')" style="background-color: #3182CE; flex: 1; min-width: 40%;">換牌(-1分)</button>
+                <button onclick="sendAction('pass')" style="background-color: #718096; flex: 1; min-width: 40%;">Pass</button>
             </div>
         </div>
 
         <div id="group-vote-panel" style="display:none; margin-top:10px; background:#FEFCBF; padding:12px; border-radius:14px; border: 1px solid #ECC94B;">
             <p id="group-vote-text" style="margin:0 0 4px 0; font-size:15px; font-weight: 400; color: #744210;"></p>
-            <p id="group-timer-text" style="margin:0 0 6px 0; font-size:13px; color:#E53E3E; font-weight: 400;">⏳ 剩餘考慮時間：5 秒</p>
+            <p id="group-timer-text" style="margin:0 0 6px 0; font-size:13px; color:#E53E3E; font-weight: 400;">剩餘考慮時間：5 秒</p>
             <div id="vote-buttons" style="display:none;">
                 <button onclick="voteGroup(true)" style="background-color: #38A169;">參加</button>
                 <button onclick="voteGroup(false)" style="background-color: #E53E3E;">不參加</button>
@@ -258,7 +246,7 @@
             <button onclick="startGame()" style="background-color: #38A169; width: 100%; font-size: 18px;">開始遊戲</button>
         </div>
 
-        <div id="battle-log">📢 訓練家記錄：等待開始...</div>
+        <div id="battle-log">遊戲記錄：等待開始...</div>
     </div>
 
     <script>
@@ -272,29 +260,16 @@
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
         const pokemonDataMapping = {
-            "虎": { img: "/bite-game/8.png", points: 8, bgClass: "bg-tiger" },
-            "超夢": { img: "/bite-game/8.png", points: 8, bgClass: "bg-tiger" },
-            "熊": { img: "/bite-game/7.png", points: 7, bgClass: "bg-bear" },
-            "卡比獸": { img: "/bite-game/7.png", points: 7, bgClass: "bg-bear" },
-            "獅": { img: "/bite-game/6.png", points: 6, bgClass: "bg-lion" },
-            "噴火龍": { img: "/bite-game/6.png", points: 6, bgClass: "bg-lion" },
-            "豹": { img: "/bite-game/5.png", points: 5, bgClass: "bg-leopard" },
-            "皮卡丘": { img: "/bite-game/5.png", points: 5, bgClass: "bg-leopard" },
-            "狼": { img: "/bite-game/4.png", points: 4, bgClass: "bg-wolf" },
-            "路卡利歐": { img: "/bite-game/4.png", points: 4, bgClass: "bg-wolf" },
-            "狐狸": { img: "/bite-game/3.png", points: 3, bgClass: "bg-fox" },
-            "伊布": { img: "/bite-game/3.png", points: 3, bgClass: "bg-fox" },
-            "蛇": { img: "/bite-game/2.png", points: 2, bgClass: "bg-snake" },
-            "妙蛙種子": { img: "/bite-game/2.png", points: 2, bgClass: "bg-snake" },
-            "兔子": { img: "/bite-game/1.png", points: 1, bgClass: "bg-rabbit" },
-            "兔": { img: "/bite-game/1.png", points: 1, bgClass: "bg-rabbit" },
-            "可達鴨": { img: "/bite-game/1.png", points: 1, bgClass: "bg-rabbit" },
-            "獵人": { img: "/bite-game/9.png", points: 9, bgClass: "bg-hunter" },
-            "甲賀忍蛙": { img: "/bite-game/9.png", points: 9, bgClass: "bg-hunter" },
-            "火箭隊": { img: "/bite-game/9.png", points: 9, bgClass: "bg-hunter" },
-            "細菌": { img: "/bite-game/999.png", points: 999, bgClass: "bg-virus" },
-            "百變怪": { img: "/bite-game/999.png", points: 999, bgClass: "bg-virus" },
-            "細菌(無限大)": { img: "/bite-game/999.png", points: 999, bgClass: "bg-virus" }
+            "8分牌": { img: "/bite-game/8.png", points: 8, bgClass: "bg-tiger" },
+            "7分牌": { img: "/bite-game/7.png", points: 7, bgClass: "bg-bear" },
+            "6分牌": { img: "/bite-game/6.png", points: 6, bgClass: "bg-lion" },
+            "5分牌": { img: "/bite-game/5.png", points: 5, bgClass: "bg-leopard" },
+            "4分牌": { img: "/bite-game/4.png", points: 4, bgClass: "bg-wolf" },
+            "3分牌": { img: "/bite-game/3.png", points: 3, bgClass: "bg-fox" },
+            "2分牌": { img: "/bite-game/2.png", points: 2, bgClass: "bg-snake" },
+            "1分牌": { img: "/bite-game/1.png", points: 1, bgClass: "bg-rabbit" },
+            "9分牌": { img: "/bite-game/9.png", points: 9, bgClass: "bg-hunter" },
+            "999分牌": { img: "/bite-game/999.png", points: 999, bgClass: "bg-virus" }
         };
 
         function toggleBGM() {
@@ -303,11 +278,11 @@
             const btn = document.getElementById('music-toggle-btn');
 
             if (bgmPlaying) {
-                btn.innerText = '🔇 關閉音樂';
+                btn.innerText = '關閉音樂';
                 btn.style.backgroundColor = '#E53E3E';
                 startBGM();
             } else {
-                btn.innerText = '🎵 開啟音樂';
+                btn.innerText = '開啟音樂';
                 btn.style.backgroundColor = '#3B4CCA';
                 stopBGM();
             }
@@ -403,7 +378,7 @@
 
             container.innerHTML = rooms.map(r => `
                 <div class="room-item">
-                    <span style="font-size: 15px;">🔴 ${r.hostName} 的房間 (${r.playerCount}人)</span>
+                    <span style="font-size: 15px;">房間：${r.hostName} (${r.playerCount}人)</span>
                     <button onclick="joinSpecificRoom('${r.code}')" style="padding: 6px 12px; margin: 0; font-size: 14px; background-color: #3182CE;">加入</button>
                 </div>
             `).join('');
@@ -411,13 +386,13 @@
 
         function createRoom() {
             const name = document.getElementById('player-name').value.trim();
-            if (!name) return alert('請先輸入你的訓練家暱稱！');
+            if (!name) return alert('請先輸入你的玩家暱稱！');
             socket.emit('create_room', name);
         }
 
         function joinSpecificRoom(code) {
             const name = document.getElementById('player-name').value.trim();
-            if (!name) return alert('請先在上方輸入你的訓練家暱稱再點擊加入！');
+            if (!name) return alert('請先在上方輸入暱稱再點擊加入！');
             myRoomCode = code;
             socket.emit('join_room', { roomCode: code, playerName: name });
         }
@@ -450,64 +425,19 @@
 
         socket.on('start_group_vote', (data) => {
             document.getElementById('group-vote-panel').style.display = 'block';
-            document.getElementById('group-vote-text').innerText = `🛡️ ${data.initiator} 發起圍毆 ${data.targetName}！`;
+            document.getElementById('group-vote-text').innerText = `${data.initiator} 發起圍毆 ${data.targetName}！`;
             startGroupTimer();
         });
 
         socket.on('prompt_group_vote', (data) => {
             document.getElementById('group-vote-panel').style.display = 'block';
-            document.getElementById('group-vote-text').innerText = `🔔 提醒：${data.initiator} 正在圍毆 ${data.targetName}，是否參加？`;
+            document.getElementById('group-vote-text').innerText = `提醒：${data.initiator} 正在圍毆 ${data.targetName}，是否參加？`;
             document.getElementById('vote-buttons').style.display = 'block';
         });
 
         socket.on('append_log', (msg) => {
-            let cleanMsg = msg;
-
-            if (cleanMsg.includes('獅') || cleanMsg.includes('噴火龍')) {
-                if (cleanMsg.includes('輸給了') || cleanMsg.includes('擊敗') || cleanMsg.includes('同歸於盡')) {
-                    let targetNameMatch = cleanMsg.match(/【(?:單挑|圍毆)失败】\s*(.*?)\s*輸給了/);
-                    if (!targetNameMatch) {
-                        targetNameMatch = cleanMsg.match(/(.*?)\s*輸給了/);
-                    }
-                    if (targetNameMatch && (cleanMsg.includes('獅') || cleanMsg.includes('噴火龍'))) {
-                        let defeatedName = targetNameMatch[1].trim();
-                        cleanMsg = `✨ ${defeatedName}被擊敗，發動同歸於盡技能`;
-                    } else if (cleanMsg.includes('同歸於盡')) {
-                        let nameMatch = cleanMsg.match(/(.*?)(?:的)?(?:獅|噴火龍)/);
-                        let name = nameMatch ? nameMatch[1].trim() : '玩家';
-                        cleanMsg = `✨ ${name}被擊敗，發動同歸於盡技能`;
-                    }
-                }
-            }
-            cleanMsg = cleanMsg.replace(/獅之同歸於盡/g, '同歸於盡');
-
-            if (cleanMsg.includes('換牌') || cleanMsg.includes('無所遁形') || cleanMsg.includes('狐狸特權')) {
-                let playerMatch = cleanMsg.match(/(.*?)\s*選擇了換牌/);
-                if (!playerMatch) playerMatch = cleanMsg.match(/(.*?)\s*換牌/);
-                if (!playerMatch) playerMatch = cleanMsg.match(/【(?:.*?)(?:特權|技能)】\s*(.*?)\s*捨棄了/);
-                let playerName = playerMatch ? playerMatch[1].trim() : '玩家';
-                cleanMsg = `🔄【棄牌】${playerName} 棄牌換新卡 (-1分)。並發動【無所遁形】技能，可看穿所有對手底牌 3回合！`;
-            }
-
-            if (cleanMsg.includes('【圍毆成功】')) {
-                cleanMsg = `🛡️ 【圍毆成功】參與者發動【臭皮匠技能】✨擊敗目標`;
-            }
-
-            let singleMatch = cleanMsg.match(/【單挑】\s*(.*?)\s*(?:輸給了|擊敗了)\s*(.*?)[，,]/);
-            if (singleMatch) {
-                let p1 = singleMatch[1].trim();
-                let p2 = singleMatch[2].trim();
-                if (cleanMsg.includes('同歸於盡')) {
-                    cleanMsg = `⚔️ 【單挑】 ${p1} 獲勝，但對方發動發動【同歸於盡】技能✨`;
-                } else if (cleanMsg.includes('輸給了')) {
-                    cleanMsg = `⚔️ 【單挑】 ${p2} 獲勝`;
-                } else {
-                    cleanMsg = `⚔️ 【單挑】 ${p1} 獲勝`;
-                }
-            }
-
             const log = document.getElementById('battle-log');
-            log.innerHTML = cleanMsg + '<br>' + log.innerHTML;
+            log.innerHTML = msg + '<br><br>' + log.innerHTML;
         });
 
         socket.on('play_sound', (type) => { playSound(type); });
@@ -518,13 +448,8 @@
             stopBGM();
             players.sort((a, b) => b.score - a.score);
             
-            let rankText = '🏆 牌庫抽完，遊戲結束！最終排名：\n\n' + players.map((p, idx) => {
-                let medal = '';
-                if (idx === 0) medal = '🥇 ';
-                else if (idx === 1) medal = '🥈 ';
-                else if (idx === 2) medal = '🥉 ';
-                else medal = `第 ${idx+1} 名: `;
-                return `${medal}${p.name} (${p.score}分)`;
+            let rankText = '牌庫抽完，遊戲結束！最終排名：\n\n' + players.map((p, idx) => {
+                return `第 ${idx+1} 名: ${p.name} (${p.score}分)`;
             }).join('\n');
             
             alert(rankText);
@@ -553,7 +478,7 @@
         function voteGroup(join) {
             socket.emit('respond_group', { roomCode: myRoomCode, join });
             document.getElementById('vote-buttons').style.display = 'none';
-            document.getElementById('group-vote-text').innerText = join ? '✅ 已選擇參加圍毆！等待結算...' : '❌ 已選擇不參加圍毆。';
+            document.getElementById('group-vote-text').innerText = join ? '已選擇參加圍毆！等待結算...' : '已選擇不參加圍毆。';
         }
 
         function clearTurnTimers() {
@@ -571,12 +496,12 @@
         function startTurnTimer() {
             if (currentTurnId === myId) {
                 timeLeft = 10;
-                document.getElementById('timer-text').innerText = `⏳ 剩餘思考時間：${timeLeft} 秒`;
+                document.getElementById('timer-text').innerText = `剩餘思考時間：${timeLeft} 秒`;
                 
                 countdownTimer = setInterval(() => {
                     timeLeft--;
                     if (timeLeft >= 0) {
-                        document.getElementById('timer-text').innerText = `⏳ 剩餘思考時間：${timeLeft} 秒`;
+                        document.getElementById('timer-text').innerText = `剩餘思考時間：${timeLeft} 秒`;
                     }
                 }, 1000);
 
@@ -591,13 +516,13 @@
 
         function startGroupTimer() {
             groupTimeLeft = 5;
-            document.getElementById('group-timer-text').innerText = `⏳ 剩餘考慮時間：${groupTimeLeft} 秒`;
+            document.getElementById('group-timer-text').innerText = `剩餘考慮時間：${groupTimeLeft} 秒`;
 
             if (groupCountdownTimer) clearInterval(groupCountdownTimer);
             groupCountdownTimer = setInterval(() => {
                 groupTimeLeft--;
                 if (groupTimeLeft >= 0) {
-                    document.getElementById('group-timer-text').innerText = `⏳ 剩餘考慮時間：${groupTimeLeft} 秒`;
+                    document.getElementById('group-timer-text').innerText = `剩餘考慮時間：${groupTimeLeft} 秒`;
                 }
             }, 1000);
 
@@ -624,7 +549,7 @@
             });
 
             if (maxFoxTurns > 0) {
-                foxBanner.innerText = `🦊 伊布特權生效中：看穿所有對手手牌 (剩餘 ${maxFoxTurns} 個回合)`;
+                foxBanner.innerText = `【看透你了】特權生效中：看穿所有對手手牌 (剩餘 ${maxFoxTurns} 個回合)`;
             } else {
                 foxBanner.innerText = '';
             }
@@ -636,7 +561,7 @@
                 let displayHtml = '<span class="list-score-tag">?</span>';
                 if (p.card) {
                     let pokeData = pokemonDataMapping[p.card.name] || { img: '', points: p.card.points, bgClass: 'bg-rabbit' };
-                    displayHtml = `<div class="pokemon-mini-container"><img src="${pokeData.img}" class="pokemon-mini-img" alt="pokemon"></div><span class="list-score-tag">${pokeData.points}</span>`;
+                    displayHtml = `<div class="pokemon-mini-container"><img src="${pokeData.img}" class="pokemon-mini-img" alt="card"></div><span class="list-score-tag">${pokeData.points}</span>`;
                 }
 
                 return `
@@ -647,7 +572,7 @@
                         </div>
                         <div class="list-right-group">
                             <span class="list-total-score">【得分: ${p.score}】</span>
-                            ${isMyTurn ? '<span style="color:#D69E2E; font-weight:400; font-size: 0.9rem;">⭐ 回合中</span>' : ''}
+                            ${isMyTurn ? '<span style="color:#D69E2E; font-weight:400; font-size: 0.9rem;">回合中</span>' : ''}
                         </div>
                     </li>`;
             }).join('');
@@ -657,9 +582,9 @@
                 let pokeData = pokemonDataMapping[me.card.name] || { img: '', points: me.card.points, bgClass: 'bg-rabbit' };
                 cardDisplay.innerHTML = `
                     <div class="card-container-wrapper ${pokeData.bgClass}">
-                        <img src="${pokeData.img}" class="pokemon-card-img" alt="pokemon">
+                        <img src="${pokeData.img}" class="pokemon-card-img" alt="card">
                     </div>
-                    <div class="morandi-score">${pokeData.points}</div>
+                    <div class="morandi-score">${pokeData.points} 分</div>
                 `;
             }
 

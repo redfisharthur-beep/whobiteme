@@ -13,16 +13,16 @@ const rooms = {};
 function createDeck() {
     let deck = [];
     const templates = [
-        { name: '虎', points: 8, count: 5, emoji: '🐅' },
-        { name: '熊', points: 7, count: 5, emoji: '🐻' },
-        { name: '獅', points: 6, count: 5, emoji: '🦁', isLion: true },
-        { name: '豹', points: 5, count: 5, emoji: '🐆' },
-        { name: '狼', points: 4, count: 5, emoji: '🐺' },
-        { name: '狐狸', points: 3, count: 5, emoji: '🦊' },
-        { name: '蛇', points: 2, count: 5, emoji: '🐍' },
-        { name: '兔', points: 1, count: 5, emoji: '🐰', isRabbit: true },
-        { name: '細菌', points: 999, count: 1, emoji: '🦠', isBacteria: true },
-        { name: '獵人', points: 9, count: 1, emoji: '🏹', isHunter: true }
+        { name: '8分牌', points: 8, count: 5 },
+        { name: '7分牌', points: 7, count: 5 },
+        { name: '6分牌', points: 6, count: 5 },
+        { name: '5分牌', points: 5, count: 5 },
+        { name: '4分牌', points: 4, count: 5 },
+        { name: '3分牌', points: 3, count: 5 },
+        { name: '2分牌', points: 2, count: 5 },
+        { name: '1分牌', points: 1, count: 5 },
+        { name: '999分牌', points: 999, count: 1, isBacteria: true },
+        { name: '9分牌', points: 9, count: 1, isHunter: true }
     ];
 
     templates.forEach(t => {
@@ -181,15 +181,19 @@ io.on('connection', (socket) => {
             actorWin = (actor.card.points >= target.card.points);
         }
 
+        // 單挑得分：得小牌的牌面分
+        let pointsToAward = Math.min(actor.card.points, target.card.points);
         let log = '';
+
         if (actorWin) {
-            actor.score += target.card.points;
-            log = `⚔️ 【單挑】${actor.name} 擊敗了 ${target.name}，獲得 ${target.card.points} 分！`;
+            actor.score += pointsToAward;
+            log = `【單挑】${actor.name} 擊敗了 ${target.name}，獲得小牌分數 ${pointsToAward} 分！`;
             io.to(actor.id).emit('play_sound', 'win');
             io.to(target.id).emit('play_sound', 'lose');
 
-            if (target.card.isLion) {
-                log += ` 🦁【獅之同歸於盡】${target.name} 的獅在倒下時發動反撲，雙方同時更換手牌！`;
+            // 6分牌被打敗，發動同歸於盡
+            if (target.card.points === 6) {
+                log += ` 【同歸於盡】${target.name} 的 6分牌 發動技能，雙方同時更換手牌！`;
                 if (room.deck.length > 0) {
                     actor.card = room.deck.pop();
                     actor.knownCards = {};
@@ -203,8 +207,8 @@ io.on('connection', (socket) => {
                 target.knownCards[target.id] = true;
             }
         } else {
-            target.score += actor.card.points;
-            log = `⚔️ 【單挑】${actor.name} 輸給了 ${target.name}，對手獲得 ${actor.card.points} 分！`;
+            target.score += pointsToAward;
+            log = `【單挑】${actor.name} 輸給了 ${target.name}，對手獲得小牌分數 ${pointsToAward} 分！`;
             io.to(actor.id).emit('play_sound', 'win');
             io.to(target.id).emit('play_sound', 'lose');
 
@@ -231,7 +235,7 @@ io.on('connection', (socket) => {
         room.pendingGroup = null;
 
         if (participants.length <= 1) {
-            io.to(roomCode).emit('append_log', '⚠️ 無其他人參加圍毆，自動轉為單挑模式！');
+            io.to(roomCode).emit('append_log', '無其他人參加圍毆，自動轉為單挑模式！');
             executeDuel(room, actor, target, roomCode);
             return;
         }
@@ -244,24 +248,24 @@ io.on('connection', (socket) => {
         participants.forEach(p => revealCardBetween(p, target));
         revealCardBetween(target, actor);
 
-        let participantDetails = participants.map(p => `${p.name}(${p.card.emoji} ${p.card.name})`).join(', ');
+        let participantDetails = participants.map(p => `${p.name}(${p.card.name})`).join(', ');
         let totalTeamPower = participants.reduce((sum, p) => sum + p.card.points, 0);
         let targetPower = target.card.points;
 
         let log = '';
 
-        // 總分合計 < 5 時，發動臭皮匠技能強制獲勝，由圍毆方最高分拿走積分
+        // 總分合計 < 5 時，發動臭皮匠技能強制獲勝，由圍毆方最大分拿走積分
         if (totalTeamPower < 5 && !target.card.isBacteria) {
             participants.sort((a, b) => b.card.points - a.card.points);
             let highestWinner = participants[0];
             highestWinner.score += target.card.points;
 
-            log = `🛡️ 【圍毆成功】參與者發動【臭皮匠技能】✨擊敗目標 ${target.name}！牌面最大的 ${highestWinner.name} 獲得 ${target.card.points} 分。`;
+            log = `【圍毆成功】參與者發動【臭皮匠】技能擊敗目標 ${target.name}！由牌面最大的 ${highestWinner.name} 獲得 ${target.card.points} 分。`;
             participants.forEach(p => io.to(p.id).emit('play_sound', 'win'));
             io.to(target.id).emit('play_sound', 'lose');
 
-            if (target.card.isLion) {
-                log += ` 🦁【獅之同歸於盡】${target.name} 的獅在圍攻下倒下，發動反撲與牌面最大的 ${highestWinner.name} 同時更換手牌！`;
+            if (target.card.points === 6) {
+                log += ` 【同歸於盡】${target.name} 的 6分牌 在倒下時發動技能，與牌面最大的 ${highestWinner.name} 同時更換手牌！`;
                 if (room.deck.length > 0) {
                     highestWinner.card = room.deck.pop();
                     highestWinner.knownCards = {};
@@ -280,21 +284,21 @@ io.on('connection', (socket) => {
             }
 
             if (target.card.isBacteria) {
-                log = `🛡️ 【圍毆失敗】參與者 [${participantDetails}] 圍攻細菌 ${target.name} 失敗！細菌無限大無法被戰勝。`;
+                log = `【圍毆失敗】參與者 [${participantDetails}] 圍攻 999分牌 失敗！此牌無法被戰勝。`;
                 participants.forEach(p => io.to(p.id).emit('play_sound', 'lose'));
                 io.to(target.id).emit('play_sound', 'win');
-            } else if (totalTeamPower >= targetPower) {
+            } else if (totalTeamPower > targetPower) {
                 participants.sort((a, b) => a.card.points - b.card.points);
                 let lowestWinner = participants[0];
                 lowestWinner.score += target.card.points;
                 
-                log = `🛡️ 【圍毆成功】參與者 [${participantDetails}] 總分 ${totalTeamPower} 大於等於 ${target.name} (${targetPower})！牌面最小的 ${lowestWinner.name} 獲得 ${target.card.points} 分！`;
+                log = `【圍毆成功】參與者 [${participantDetails}] 總分 ${totalTeamPower} 大於 ${target.name} (${targetPower})！由牌面最小的 ${lowestWinner.name} 獲得 ${target.card.points} 分！`;
                 
                 participants.forEach(p => io.to(p.id).emit('play_sound', 'win'));
                 io.to(target.id).emit('play_sound', 'lose');
 
-                if (target.card.isLion) {
-                    log += ` 🦁【獅之同歸於盡】${target.name} 的獅在圍攻下倒下，發動反撲與牌面最小的 ${lowestWinner.name} 同時更換手牌！`;
+                if (target.card.points === 6) {
+                    log += ` 【同歸於盡】${target.name} 的 6分牌 在倒下時發動技能，與牌面最小的 ${lowestWinner.name} 同時更換手牌！`;
                     if (room.deck.length > 0) {
                         lowestWinner.card = room.deck.pop();
                         lowestWinner.knownCards = {};
@@ -308,7 +312,7 @@ io.on('connection', (socket) => {
                     target.knownCards[target.id] = true;
                 }
             } else {
-                log = `🛡️ 【圍毆失敗】參與者 [${participantDetails}] 總分 ${totalTeamPower} 不足 ${targetPower}，被圍毆者 ${target.name} 成功守住！`;
+                log = `【圍毆失敗】參與者 [${participantDetails}] 總分 ${totalTeamPower} 不大於被圍毆者 ${targetPower}，${target.name} 成功守住！`;
                 participants.forEach(p => io.to(p.id).emit('play_sound', 'lose'));
                 io.to(target.id).emit('play_sound', 'win');
             }
@@ -326,7 +330,7 @@ io.on('connection', (socket) => {
         if (!actor) return;
 
         if (actor.card.isBacteria && (actionType === 'attack' || actionType === 'group_attack')) {
-            return socket.emit('error_message', '細菌牌無法發起單挑或圍毆！');
+            return socket.emit('error_message', '999分牌無法發起單挑或圍毆！');
         }
 
         if (actionType === 'attack') {
@@ -365,7 +369,7 @@ io.on('connection', (socket) => {
             }, 5000);
 
         } else if (actionType === 'discard') {
-            const wasFox = (actor.card.name === '狐狸');
+            const isThreePoint = (actor.card.points === 3);
             actor.score -= 1;
             
             if (room.deck.length > 0) {
@@ -374,7 +378,7 @@ io.on('connection', (socket) => {
                 actor.knownCards[actor.id] = true;
             }
 
-            if (wasFox) {
+            if (isThreePoint) {
                 if (!room.foxVisionExpiry) room.foxVisionExpiry = {};
                 room.foxVisionExpiry[actor.id] = {};
                 room.players.forEach(p => {
@@ -382,15 +386,15 @@ io.on('connection', (socket) => {
                         room.foxVisionExpiry[actor.id][p.id] = 3;
                     }
                 });
-                io.to(roomCode).emit('append_log', `🦊 【狐狸特權】${actor.name} 捨棄了狐狸並換新卡，獲得看穿所有對手手牌的能力，持續 3 個回合！`);
+                io.to(roomCode).emit('append_log', `【看透你了】${actor.name} 捨棄了 3分牌 並換新卡，獲得看穿所有對手手牌的能力，持續 3 個回合！`);
             } else {
-                io.to(roomCode).emit('append_log', `🔄 【棄牌】${actor.name} 棄牌換新卡 (-1分)。`);
+                io.to(roomCode).emit('append_log', `【棄牌】${actor.name} 棄牌換新卡 (-1分)。`);
             }
 
             nextTurn(room);
 
         } else if (actionType === 'pass') {
-            io.to(roomCode).emit('append_log', `💤 【Pass】${actor.name} Pass。`);
+            io.to(roomCode).emit('append_log', `【Pass】${actor.name} 選擇 Pass。`);
             nextTurn(room);
         }
     });
@@ -424,11 +428,11 @@ io.on('connection', (socket) => {
                 actor.knownCards = {};
                 actor.knownCards[actor.id] = true;
             }
-            io.to(roomCode).emit('append_log', `⏱️ 【逾時自動】${actor.name} (細菌) 未能在 10 秒內決定，自動棄牌換卡 (-1分)。`);
+            io.to(roomCode).emit('append_log', `【逾時自動】${actor.name} 未能在 10 秒內決定，自動棄牌換卡 (-1分)。`);
             nextTurn(room);
         } else {
             const target = otherPlayers[Math.floor(Math.random() * otherPlayers.length)];
-            io.to(roomCode).emit('append_log', `⏱️ 【逾時自動】${actor.name} 未能在 10 秒內決定，自動隨機單挑 ${target.name}！`);
+            io.to(roomCode).emit('append_log', `【逾時自動】${actor.name} 未能在 10 秒內決定，自動隨機單挑 ${target.name}！`);
             executeDuel(room, actor, target, roomCode);
         }
     });
