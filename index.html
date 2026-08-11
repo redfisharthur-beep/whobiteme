@@ -201,12 +201,15 @@
     </div>
 
     <div id="login-box" class="box">
-        <p style="font-weight: 400; color: #2D3748;">輸入你的玩家暱稱</p>
-        <input type="text" id="player-name" placeholder="例如：玩家一"><br>
+        <div class="header-logo-container">
+            <img src="/bite-game/bite-game/pokemom.png" alt="Pokemon Logo" style="max-width: 250px; height: auto;">
+        </div>
+        <p style="font-weight: 400; color: #2D3748;">寶可夢訓練家</p>
+        <input type="text" id="player-name"><br>
         <button onclick="createRoom()" style="background-color: #CC0000; width: 90%;">建立新房間</button>
         
         <div style="margin: 15px 0; border-top: 2px dashed #CBD5E0;"></div>
-        <p style="margin-bottom: 5px; font-weight: 400;">可用房間（點擊直接加入）：</p>
+        <p style="margin-bottom: 5px; font-weight: 400;">對戰列表</p>
         <div id="room-list-container" style="max-height: 160px; overflow-y: auto; padding: 5px;">
             <p style="color: #A0AEC0; font-size: 14px;">目前沒有等待中的房間...</p>
         </div>
