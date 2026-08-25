@@ -33,10 +33,11 @@
             border: 4px solid #FFCB05;
         }
         input {
-            padding: 12px; margin: 8px 0; width: 90%;
+            padding: 12px; margin: 8px auto; width: 50%; display: block;
             background-color: #F4F6F8; border: 2px solid #CBD5E0;
             border-radius: 12px; font-size: 18px; font-family: 'Zen Maru Gothic', sans-serif; font-weight: 300;
             outline: none; transition: border-color 0.2s;
+            text-align: center;
         }
         input:focus { border-color: #3B4CCA; }
         button {
@@ -48,92 +49,106 @@
         button:hover { background-color: #2a379c; transform: translateY(-1px); }
         ul { list-style: none; padding: 0; margin: 0; }
         li {
-            background: #F7F9FA; margin: 8px auto; padding: 12px 16px; width: 100%;
+            background: #F7F9FA; margin: 8px auto; padding: 10px 14px; width: 100%;
             border-radius: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 16px; font-weight: 300;
             border: 1px solid #E2E8F0;
         }
+        li.clickable-player {
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        li.clickable-player:hover {
+            background-color: #EBF8FF;
+            border-color: #3182CE;
+        }
+        li.selected-target {
+            background-color: #FEFCBF !important;
+            border: 2px solid #D69E2E !important;
+        }
         #card-display {
-            margin-top: 10px; background: #FFF9E6; padding: 15px; border-radius: 16px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: #975A16; font-size: 18px; font-weight: 300;
+            margin-top: 10px; background: #FFF9E6; padding: 12px; border-radius: 16px;
+            display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 10px; color: #975A16; font-size: 18px; font-weight: 300;
             border: none;
         }
-        
-        @keyframes rotateBorder {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
 
+        /* 圓框不加粗，但具備完整漸層與精緻陰影、層次 */
         .card-container-wrapper {
             position: relative;
-            width: 192px;
-            height: 192px;
+            width: 176px;
+            height: 176px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: visible;
-            box-shadow: 0 0 15px rgba(0,0,0,0.3);
-            margin: 0 auto;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35), 
+                        inset 0 4px 8px rgba(255, 255, 255, 0.6), 
+                        inset 0 -4px 8px rgba(0, 0, 0, 0.3);
+            flex-shrink: 0;
+            padding: 2px; /* 維持纖細邊框 */
         }
 
         .card-container-wrapper::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            top: 0; left: 0; right: 0; bottom: 0;
             z-index: 0;
             border-radius: 50%;
-            animation: rotateBorder 10s linear infinite;
+            border: 2px solid rgba(255, 255, 255, 0.7); /* 纖細邊框不加粗 */
+            box-shadow: 0 0 8px rgba(0,0,0,0.25);
         }
 
         .card-container-wrapper .pokemon-card-img {
             position: relative;
             z-index: 1;
-            width: 184px;
-            height: 184px;
+            width: 164px;
+            height: 164px;
             border-radius: 50%;
             object-fit: cover;
             background: #fff;
-            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.25), 0 4px 10px rgba(0,0,0,0.2);
         }
 
-        .bg-tiger::before { background: repeating-conic-gradient(#ff3333 0deg 20deg, #ffffff 20deg 40deg); }
-        .bg-bear::before { background: repeating-conic-gradient(#ffcc00 0deg 20deg, #ffffff 20deg 40deg); }
-        .bg-lion::before { background: repeating-conic-gradient(#00cc66 0deg 20deg, #ffffff 20deg 40deg); }
-        .bg-leopard::before { background: linear-gradient(135deg, #ff3333, #b30000); animation: none; }
-        .bg-wolf::before { background: linear-gradient(135deg, #ffd700, #cc9900); animation: none; }
-        .bg-fox::before { background: linear-gradient(135deg, #00e676, #00897b); animation: none; }
-        .bg-snake::before { background: linear-gradient(135deg, #00b0ff, #1565c0); animation: none; }
-        .bg-rabbit::before { background: linear-gradient(135deg, #ffffff, #e0e0e0); animation: none; }
-        .bg-hunter::before { background: repeating-conic-gradient(#ff3333 0deg 20deg, #ffea00 20deg 40deg, #ffffff 40deg 60deg); }
-        .bg-virus::before { background: repeating-conic-gradient(#ff1744 0deg 15deg, #ffea00 15deg 30deg, #00e676 30deg 45deg, #00b0ff 45deg 60deg); animation: rotateBorder 8s linear infinite; }
+        /* 各屬性漸層底色與陰影配置 */
+        .bg-rabbit::before { background: linear-gradient(135deg, #a0aec0, #cbd5e0); }
+        .bg-snake::before { background: linear-gradient(135deg, #3182ce, #63b3ed); }
+        .bg-fox::before { background: linear-gradient(135deg, #38a169, #68d391); }
+        .bg-wolf::before { background: linear-gradient(135deg, #d69e2e, #f6e05e); }
+        .bg-leopard::before { background: linear-gradient(135deg, #dd6b20, #fbd38d); }
+        .bg-lion::before { background: linear-gradient(135deg, #e53e3e, #fc8181); }
+        .bg-bear::before { background: linear-gradient(135deg, #e2e8f0, #ffffff, #a0aec0); border: 1px solid #cbd5e0; }
+        .bg-tiger::before { background: linear-gradient(135deg, #d4af37, #f6e05e, #aa771c); }
+        .bg-hunter::before { background: linear-gradient(135deg, #1a202c, #4a5568, #d4af37); }
+        .bg-virus::before { background: linear-gradient(135deg, #654321, #3d2314, #1a0f07); box-shadow: inset 0 0 10px rgba(0,0,0,0.8); }
 
-        .morandi-score {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 36px;
+        .din-score {
+            font-family: 'DIN', 'Montserrat', sans-serif;
             font-weight: 900;
+            font-size: 44px;
             color: #9C4A4A;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.15), 0 0 10px rgba(156,74,74,0.3);
-            letter-spacing: 2px;
-            margin-top: 2px;
+            line-height: 1;
+            letter-spacing: 0.5px;
+        }
+
+        .pokemon-name {
+            font-size: 20px;
+            font-weight: 500;
+            color: #2D3748;
+            letter-spacing: 0.5px;
         }
 
         .list-score-tag {
-            font-family: 'Montserrat', sans-serif;
+            font-family: 'DIN', 'Montserrat', sans-serif;
             font-weight: 900;
             color: #9C4A4A;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-            margin-right: 12px;
-            font-size: 1.8em;
+            font-size: 1.4em;
             display: inline-block;
         }
 
         .list-player-name {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 500;
-            margin-left: 8px;
+            margin-left: 6px;
             color: #2D3748;
         }
 
@@ -141,34 +156,34 @@
             margin-left: auto;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         .list-total-score {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 700;
             color: #3182CE;
-            text-shadow: 1px 1px 2px rgba(49, 130, 206, 0.25);
             font-family: 'Zen Maru Gothic', sans-serif;
             letter-spacing: 0.5px;
         }
 
+        /* 列表中的迷你圓形圖示也加入漸層與精緻陰影 */
         li .pokemon-mini-container {
-            width: 60px; 
-            height: 60px; 
+            width: 52px; 
+            height: 52px; 
             border-radius: 50%; 
             overflow: hidden;
             display: inline-block;
             vertical-align: middle; 
             margin-right: 4px; 
             background: #fff; 
-            box-shadow: 0 0 6px rgba(0,0,0,0.15);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.25);
             flex-shrink: 0;
         }
 
         li .pokemon-mini-img {
-            width: 60px; 
-            height: 60px; 
+            width: 52px; 
+            height: 52px; 
             object-fit: cover;
         }
 
@@ -202,11 +217,10 @@
 
     <div id="login-box" class="box">
         <div class="header-logo-container">
-            <img src="/bite-game/bite-game/pokemom.png" alt="Pokemon Logo" style="max-width: 250px; height: auto;">
+            <img src="/bite-game/0.png" alt="首頁主視覺" style="width: 100%; max-width: 520px; height: auto; display: block; border-radius: 18px;">
         </div>
-        <p style="font-weight: 400; color: #2D3748;">寶可夢訓練家</p>
-        <input type="text" id="player-name"><br>
-        <button onclick="createRoom()" style="background-color: #CC0000; width: 90%;">建立新房間</button>
+        <input type="text" id="player-name" placeholder="寶可夢訓練家"><br>
+        <button onclick="createRoom()" style="background-color: #CC0000; width: 50%;">建立新房間</button>
         
         <div style="margin: 15px 0; border-top: 2px dashed #CBD5E0;"></div>
         <p style="margin-bottom: 5px; font-weight: 400;">對戰列表</p>
@@ -216,18 +230,22 @@
     </div>
 
     <div id="game-box" class="box" style="display:none;">
-        <div id="deck-info" style="font-size: 22.5px; color: #4A5568; margin-bottom: 8px; font-weight: 500;"></div>
         
-        <div id="card-display">等待遊戲開始...</div>
-        <div id="turn-banner" style="margin-top: 8px; color: #3B4CCA; font-size: 17px; font-weight: 400;"></div>
+        <div id="card-display">
+            等待遊戲開始...
+        </div>
+
         <div id="fox-status-banner" style="margin-top: 4px; font-size: 14px; color: #D69E2E; font-weight: 400;"></div>
 
         <ul id="game-player-list" style="margin-top: 10px;"></ul>
 
         <div id="action-panel" style="display:none; margin-top: 10px; background: #EDF2F7; padding: 12px; border-radius: 14px; border: 1px solid #CBD5E0;">
-            <p id="timer-text" style="margin:0 0 4px 0; font-size:15px; color:#E53E3E; font-weight:400;">剩餘思考時間：10 秒</p>
-            <p style="margin:0 0 6px 0; font-size:15px; font-weight: 400;">選擇你的回合行動：</p>
-            <div id="target-selector" style="margin-bottom: 8px;"></div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <p id="target-instruction" style="margin:0; font-size:14px; font-weight: 400; color: #2B6CB0; text-align: left;">
+                    <img src="/bite-game/hit.png" style="width: 18px; height: 18px; vertical-align: middle; margin-right: 4px;" alt="hit"> 選擇對手
+                </p>
+                <span id="timer-text" style="font-size: 15px; font-weight: 700; color: #E53E3E; white-space: nowrap; margin-left: 8px;">10s</span>
+            </div>
             <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 6px;">
                 <button onclick="sendAction('attack')" style="background-color: #DD6B20; flex: 1; min-width: 40%;">單挑</button>
                 <button onclick="sendAction('group_attack')" style="background-color: #E53E3E; flex: 1; min-width: 40%;">圍毆</button>
@@ -252,9 +270,19 @@
         <div id="battle-log">遊戲記錄：等待開始...</div>
     </div>
 
+    <!-- 結算畫面 Modal 容器 -->
+    <div id="game-over-modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background: #fff; padding: 25px; border-radius: 20px; width: 90%; max-width: 480px; max-height: 85vh; overflow-y: auto; text-align: left; border: 4px solid #FFCB05;">
+            <h2 style="text-align: center; color: #2C3E50; margin-top: 0;">🏆 最終結算排名</h2>
+            <div id="game-over-list" style="margin-top: 15px;"></div>
+            <button onclick="location.reload()" style="width: 100%; margin-top: 20px; background-color: #3B4CCA; font-size: 16px;">返回大廳</button>
+        </div>
+    </div>
+
     <script>
         const socket = io();
         let myRoomCode = '', myId = '', currentTurnId = '', cachedPlayers = [];
+        let selectedTargetId = null; 
         let turnTimer = null, countdownTimer = null, groupVoteTimer = null, groupCountdownTimer = null;
         let timeLeft = 10, groupTimeLeft = 5;
 
@@ -263,16 +291,16 @@
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
         const pokemonDataMapping = {
-            "8分牌": { img: "/bite-game/8.png", points: 8, bgClass: "bg-tiger" },
-            "7分牌": { img: "/bite-game/7.png", points: 7, bgClass: "bg-bear" },
-            "6分牌": { img: "/bite-game/6.png", points: 6, bgClass: "bg-lion" },
-            "5分牌": { img: "/bite-game/5.png", points: 5, bgClass: "bg-leopard" },
-            "4分牌": { img: "/bite-game/4.png", points: 4, bgClass: "bg-wolf" },
-            "3分牌": { img: "/bite-game/3.png", points: 3, bgClass: "bg-fox" },
-            "2分牌": { img: "/bite-game/2.png", points: 2, bgClass: "bg-snake" },
-            "1分牌": { img: "/bite-game/1.png", points: 1, bgClass: "bg-rabbit" },
-            "9分牌": { img: "/bite-game/9.png", points: 9, bgClass: "bg-hunter" },
-            "999分牌": { img: "/bite-game/999.png", points: 999, bgClass: "bg-virus" }
+            "1分牌": { img: "/bite-game/1.png", points: 1, pokemonName: "可達鴨", displayNo: "1", bgClass: "bg-rabbit" },
+            "2分牌": { img: "/bite-game/2.png", points: 2, pokemonName: "妙蛙種子", displayNo: "2", bgClass: "bg-snake" },
+            "3分牌": { img: "/bite-game/3.png", points: 3, pokemonName: "伊布", displayNo: "3", bgClass: "bg-fox" },
+            "4分牌": { img: "/bite-game/4.png", points: 4, pokemonName: "路卡利歐", displayNo: "4", bgClass: "bg-wolf" },
+            "5分牌": { img: "/bite-game/5.png", points: 5, pokemonName: "皮卡丘", displayNo: "5", bgClass: "bg-leopard" },
+            "6分牌": { img: "/bite-game/6.png", points: 6, pokemonName: "噴火龍", displayNo: "6", bgClass: "bg-lion" },
+            "7分牌": { img: "/bite-game/7.png", points: 7, pokemonName: "卡比獸", displayNo: "7", bgClass: "bg-bear" },
+            "8分牌": { img: "/bite-game/8.png", points: 8, pokemonName: "超夢", displayNo: "8", bgClass: "bg-tiger" },
+            "9分牌": { img: "/bite-game/9.png", points: 9, pokemonName: "甲賀忍蛙", displayNo: "9", bgClass: "bg-hunter" },
+            "999分牌": { img: "/bite-game/00.png", points: 999, pokemonName: "百變怪", displayNo: "∞", bgClass: "bg-virus" }
         };
 
         function toggleBGM() {
@@ -417,7 +445,11 @@
             hideGroupVotePanel();
             cachedPlayers = data.players;
             currentTurnId = data.currentTurnId;
-            document.getElementById('deck-info').innerText = `牌庫剩餘: ${data.deckCount} 張`;
+            
+            if (!cachedPlayers.some(p => p.id === selectedTargetId && p.id !== myId)) {
+                selectedTargetId = null;
+            }
+
             renderUI();
             startTurnTimer();
         });
@@ -449,13 +481,29 @@
             clearTurnTimers();
             hideGroupVotePanel();
             stopBGM();
+            
             players.sort((a, b) => b.score - a.score);
             
-            let rankText = '牌庫抽完，遊戲結束！最終排名：\n\n' + players.map((p, idx) => {
-                return `第 ${idx+1} 名: ${p.name} (${p.score}分)`;
-            }).join('\n');
+            const listContainer = document.getElementById('game-over-list');
+            listContainer.innerHTML = players.map((p, idx) => {
+                let winRate = (p.totalBattles > 0) ? Math.round((p.wins / p.totalBattles) * 100) : 0;
+                return `
+                    <div style="background: #F7F9FA; margin: 8px 0; padding: 12px; border-radius: 12px; border: 1px solid #E2E8F0;">
+                        <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 17px; color: #2D3748;">
+                            <span>第 ${idx+1} 名：${p.name}</span>
+                            <span style="color: #3182CE;">得分: ${p.score}</span>
+                        </div>
+                        <div style="font-size: 14px; color: #4A5568; margin-top: 6px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
+                            <div>勝率：${winRate}% (${p.wins}/${p.totalBattles})</div>
+                            <div>發起圍毆：${p.groupAttackCount} 次</div>
+                            <div>棄牌(Pass)：${p.passCount} 次</div>
+                            <div>發動技能：${p.skillCount} 次</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
             
-            alert(rankText);
+            document.getElementById('game-over-modal').style.display = 'flex';
         });
 
         socket.on('error_message', (msg) => { alert(msg); });
@@ -467,13 +515,19 @@
 
         function startGame() { socket.emit('start_game', myRoomCode); }
 
+        function selectTarget(targetId) {
+            if (currentTurnId !== myId) return; 
+            if (targetId === myId) return; 
+
+            selectedTargetId = targetId;
+            renderUI(); 
+        }
+
         function sendAction(actionType) {
             clearTurnTimers();
-            let targetId = null;
+            let targetId = selectedTargetId;
             if (actionType === 'attack' || actionType === 'group_attack') {
-                const select = document.getElementById('target-select');
-                if (select) targetId = select.value;
-                if (!targetId) return alert('請選擇目標！');
+                if (!targetId) return alert('請先點選畫面中要攻擊的玩家名字作為目標！');
             }
             socket.emit('player_action', { roomCode: myRoomCode, actionType, targetId });
         }
@@ -499,12 +553,12 @@
         function startTurnTimer() {
             if (currentTurnId === myId) {
                 timeLeft = 10;
-                document.getElementById('timer-text').innerText = `剩餘思考時間：${timeLeft} 秒`;
+                document.getElementById('timer-text').innerText = `${timeLeft}s`;
                 
                 countdownTimer = setInterval(() => {
                     timeLeft--;
                     if (timeLeft >= 0) {
-                        document.getElementById('timer-text').innerText = `剩餘思考時間：${timeLeft} 秒`;
+                        document.getElementById('timer-text').innerText = `${timeLeft}s`;
                     }
                 }, 1000);
 
@@ -537,12 +591,10 @@
 
         function renderUI() {
             const list = document.getElementById('game-player-list');
-            const turnBanner = document.getElementById('turn-banner');
             const foxBanner = document.getElementById('fox-status-banner');
             const actionPanel = document.getElementById('action-panel');
-            const targetSelector = document.getElementById('target-selector');
+            const targetInstruction = document.getElementById('target-instruction');
             const cardDisplay = document.getElementById('card-display');
-            let activePlayerName = '';
 
             let maxFoxTurns = 0;
             cachedPlayers.forEach(p => {
@@ -559,23 +611,32 @@
 
             list.innerHTML = cachedPlayers.map(p => {
                 let isMyTurn = (p.id === currentTurnId);
-                if (isMyTurn) activePlayerName = p.name;
                 
                 let displayHtml = '<span class="list-score-tag">?</span>';
                 if (p.card) {
                     let pokeData = pokemonDataMapping[p.card.name] || { img: '', points: p.card.points, bgClass: 'bg-rabbit' };
-                    displayHtml = `<div class="pokemon-mini-container"><img src="${pokeData.img}" class="pokemon-mini-img" alt="card"></div><span class="list-score-tag">${pokeData.points}</span>`;
+                    displayHtml = `<div class="pokemon-mini-container"><img src="${pokeData.img}" class="pokemon-mini-img" alt="card"></div><span class="list-score-tag">${pokeData.displayNo || pokeData.points}</span>`;
                 }
 
+                let isClickable = (currentTurnId === myId && p.id !== myId);
+                let isSelected = (p.id === selectedTargetId);
+                let liClasses = [];
+                if (isMyTurn) liClasses.push('turn-highlight');
+                if (isClickable) liClasses.push('clickable-player');
+                if (isSelected) liClasses.push('selected-target');
+
+                let attackIconHtml = (currentTurnId === myId && p.id !== myId) ? '<img src="/bite-game/hit.png" style="width: 22px; height: 22px; margin-right: 6px; vertical-align: middle;" alt="hit">' : '';
+
                 return `
-                    <li class="${isMyTurn ? 'turn-highlight' : ''}">
+                    <li class="${liClasses.join(' ')}" ${isClickable ? `onclick="selectTarget('${p.id}')"` : ''}>
                         <div style="display: flex; align-items: center;">
+                            ${attackIconHtml}
                             ${displayHtml}
                             <span class="list-player-name">${p.name}</span>
                         </div>
                         <div class="list-right-group">
                             <span class="list-total-score">【得分: ${p.score}】</span>
-                            ${isMyTurn ? '<span style="color:#D69E2E; font-weight:400; font-size: 0.9rem;">回合中</span>' : ''}
+                            ${isMyTurn ? '<span style="color:#D69E2E; font-weight:700; font-size: 1.2rem;">回合中</span>' : ''}
                         </div>
                     </li>`;
             }).join('');
@@ -587,17 +648,23 @@
                     <div class="card-container-wrapper ${pokeData.bgClass}">
                         <img src="${pokeData.img}" class="pokemon-card-img" alt="card">
                     </div>
-                    <div class="morandi-score">${pokeData.points} 分</div>
+                    <div style="display: flex; flex-direction: column; align-items: flex-start; text-align: left; margin-left: 6px;">
+                        <div class="pokemon-name" style="font-size: 19px; line-height: 1.2;">${pokeData.pokemonName || ''}</div>
+                        <div class="din-score" style="font-size: 48px; color: #D53F8C;">${pokeData.displayNo || pokeData.points}</div>
+                    </div>
                 `;
             }
-
-            turnBanner.innerText = `現在是 【${activePlayerName}】 的回合`;
+            
             if (currentTurnId === myId) {
                 actionPanel.style.display = 'block';
-                let otherPlayers = cachedPlayers.filter(p => p.id !== myId);
-                targetSelector.innerHTML = `目標：<select id="target-select" style="font-size:16px; font-weight:300; padding:8px; width: 70%; border-radius:8px; border:1px solid #CBD5E0;">` +
-                    otherPlayers.map(p => `<option value="${p.id}">${p.name}</option>`).join('') +
-                    `</select>`;
+                if (selectedTargetId) {
+                    let targetObj = cachedPlayers.find(p => p.id === selectedTargetId);
+                    targetInstruction.innerHTML = `<img src="/bite-game/hit.png" style="width: 18px; height: 18px; vertical-align: middle; margin-right: 4px;" alt="hit"> 已選擇對手：<strong style="color: #2C5282;">${targetObj ? targetObj.name : '未知'}</strong>`;
+                    targetInstruction.style.color = '#2B6CB0';
+                } else {
+                    targetInstruction.innerHTML = `<img src="/bite-game/hit.png" style="width: 18px; height: 18px; vertical-align: middle; margin-right: 4px;" alt="hit"> 選擇對手`;
+                    targetInstruction.style.color = '#E53E3E';
+                }
             } else {
                 actionPanel.style.display = 'none';
             }
