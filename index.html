@@ -431,8 +431,8 @@
 
         /* 選擇對手圖示同步放大 */
         #game-box #target-instruction img {
-            width: 26px !important;
-            height: 26px !important;
+            width: 20.8px !important;
+            height: 20.8px !important;
             margin-right: 5px !important;
         }
 
@@ -486,30 +486,36 @@
 
 
 
-        /* 下方遊戲說明流程：日本可愛清新圓體 */
+        /* 下方遊戲說明流程：日本可愛清新圓潤粗體 */
         #battle-log {
             font-family: 'M PLUS Rounded 1c', 'Zen Maru Gothic', sans-serif !important;
             font-weight: 700 !important;
-            letter-spacing: 0.06em;
-            line-height: 1.75 !important;
-            color: #53606F !important;
+            font-size: 22px !important;
+            letter-spacing: 0.08em;
+            line-height: 1.9 !important;
+            color: #495057 !important;
             background: #FFFDF9 !important;
-            border: 1px solid #E8E3DC !important;
-            border-radius: 18px !important;
-            box-shadow: 0 3px 10px rgba(90, 100, 110, 0.08);
+            border: 2px solid #F3E6C9 !important;
+            border-radius: 22px !important;
+            padding: 18px !important;
+            box-shadow: 0 5px 16px rgba(120, 120, 120, 0.08);
         }
 
-
-        /* 玩家列表攻擊圖示放大 */
-        #game-player-list li img[alt="hit"]{
-            width:30px !important;
-            height:30px !important;
+        /* 一般回合倒數秒數放大 30% */
+        #game-box #timer-text {
+            font-family: 'M PLUS Rounded 1c', 'Zen Maru Gothic', sans-serif !important;
+            font-size: 18.2px !important; /* 14px × 1.3 */
+            font-weight: 700 !important;
+            letter-spacing: 1px;
+            margin-left: 8px !important;
         }
 
-        /* 等待秒數放大30% */
-        #timer-text{
-            font-size:18.2px !important;
-            font-weight:700;
+        /* 圍毆等待倒數秒數也同步放大 30% */
+        #game-box #group-timer-text {
+            font-family: 'M PLUS Rounded 1c', 'Zen Maru Gothic', sans-serif !important;
+            font-size: 15.6px !important; /* 12px × 1.3 */
+            font-weight: 700 !important;
+            letter-spacing: 0.8px;
         }
 
     </style>
@@ -545,9 +551,9 @@
         <div id="action-panel" style="display:none; margin-top: 8px; background: #EDF2F7; padding: 10px; border-radius: 12px; border: 1px solid #CBD5E0;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                 <p id="target-instruction" style="margin:0; font-size:13px; font-weight: 400; color: #2B6CB0; text-align: left;">
-                    <img src="/bite-game/hit.png" style="width: 26px; height: 26px; vertical-align: middle; margin-right: 6px;" alt="hit"> 選擇對手
+                    <img src="/bite-game/hit.png" style="width: 26px; height: 26px; vertical-align: middle; margin-right: 8px;" alt="hit"> 選擇對手
                 </p>
-                <span id="timer-text" style="font-size: 18.2px; font-weight: 700; color: #E53E3E; white-space: nowrap; margin-left: 6px;">10s</span>
+                <span id="timer-text" style="font-size: 14px; font-weight: 700; color: #E53E3E; white-space: nowrap; margin-left: 6px;">10s</span>
             </div>
             <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 5px;">
                 <button onclick="sendAction('attack')" style="background-color: #DD6B20; flex: 1; min-width: 40%;">單挑</button>
@@ -910,7 +916,7 @@
                 if (isClickable) liClasses.push('clickable-player');
                 if (isSelected) liClasses.push('selected-target');
 
-                let attackIconHtml = (currentTurnId === myId && p.id !== myId) ? '<img src="/bite-game/hit.png" style="width: 30px; height: 30px; margin-right: 6px; vertical-align: middle;" alt="hit">' : '';
+                let attackIconHtml = (currentTurnId === myId && p.id !== myId) ? '<img src="/bite-game/hit.png" style="width: 33px; height: 33px; margin-right: 8px; vertical-align: middle; filter: drop-shadow(0 2px 3px rgba(0,0,0,.25));" alt="hit">' : '';
 
                 return `
                     <li class="${liClasses.join(' ')}" ${isClickable ? `onclick="selectTarget('${p.id}')"` : ''}>
@@ -945,10 +951,10 @@
                 actionPanel.style.display = 'block';
                 if (selectedTargetId) {
                     let targetObj = cachedPlayers.find(p => p.id === selectedTargetId);
-                    targetInstruction.innerHTML = `<img src="/bite-game/hit.png" style="width: 26px; height: 26px; vertical-align: middle; margin-right: 6px;" alt="hit"> 已選擇對手：<strong style="color: #2C5282;">${targetObj ? targetObj.name : '未知'}</strong>`;
+                    targetInstruction.innerHTML = `<img src="/bite-game/hit.png" style="width: 26px; height: 26px; vertical-align: middle; margin-right: 8px;" alt="hit"> 已選擇對手：<strong style="color: #2C5282;">${targetObj ? targetObj.name : '未知'}</strong>`;
                     targetInstruction.style.color = '#2B6CB0';
                 } else {
-                    targetInstruction.innerHTML = `<img src="/bite-game/hit.png" style="width: 26px; height: 26px; vertical-align: middle; margin-right: 6px;" alt="hit"> 選擇對手`;
+                    targetInstruction.innerHTML = `<img src="/bite-game/hit.png" style="width: 26px; height: 26px; vertical-align: middle; margin-right: 8px;" alt="hit"> 選擇對手`;
                     targetInstruction.style.color = '#E53E3E';
                 }
             } else {
