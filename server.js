@@ -218,7 +218,6 @@ io.on('connection', (socket) => {
             }
         }
 
-        // 修改：當 1 分成功打敗 8 分時，獲得 8 分；否則為原本規則的 Math.min
         let pointsToAward = (actor.card.points === 1 && target.card.points === 8) 
             ? 8 
             : Math.min(actor.card.points, target.card.points);
@@ -239,8 +238,9 @@ io.on('connection', (socket) => {
 
             if (target.card.points === 6) {
                 target.skillCount += 1;
-                log += ` 【同歸於盡】${target.name} 的噴火龍在倒下時發動技能，全部同時更換手牌！`;
-                room.players.forEach(p => {
+                // [已修改] 改為參賽的兩人更換手牌
+                log += ` 【同歸於盡】${target.name} 的 6 分牌在倒下時發動技能，雙方同時更換手牌！`;
+                [actor, target].forEach(p => {
                     if (room.deck.length > 0) {
                         p.card = room.deck.pop();
                         p.knownCards = {};
@@ -270,8 +270,9 @@ io.on('connection', (socket) => {
 
             if (actor.card.points === 6) {
                 actor.skillCount += 1;
-                log += ` 【同歸於盡】${actor.name} 的噴火龍在倒下時發動技能，全部同時更換手牌！`;
-                room.players.forEach(p => {
+                // [已修改] 改為參賽的兩人更換手牌
+                log += ` 【同歸於盡】${actor.name} 的 6 分牌在倒下時發動技能，雙方同時更換手牌！`;
+                [actor, target].forEach(p => {
                     if (room.deck.length > 0) {
                         p.card = room.deck.pop();
                         p.knownCards = {};
