@@ -331,6 +331,62 @@
             background: transparent;
             box-shadow: none;
         }
+
+        /* 首頁整體放大 30%：文字、輸入框、按鈕與對戰列表同步放大 */
+        #login-box {
+            max-width: 1430px;
+            padding: 19.5px;
+        }
+        #login-box input {
+            width: 65%;
+            padding: 13px;
+            margin: 8px auto;
+            border-radius: 16px;
+            font-size: 20.8px;
+        }
+        #login-box > button {
+            width: 65% !important;
+            padding: 13px 21px;
+            margin: 7px 5px;
+            border-radius: 16px;
+            font-size: 19.5px;
+        }
+        #login-box > div[style*="border-top"] {
+            margin: 13px 0 !important;
+        }
+        #login-box > p {
+            margin-bottom: 5px !important;
+            font-size: 20.8px;
+        }
+        #login-box #room-list-container {
+            width: 65%;
+            max-height: 169px;
+            padding: 4px;
+        }
+        #login-box #room-list-container > p {
+            font-size: 18.2px !important;
+        }
+        #login-box .room-item {
+            padding: 10px 13px;
+            margin: 7px 0;
+            border-radius: 13px;
+        }
+        #login-box .room-item span {
+            font-size: 18.2px !important;
+        }
+        #login-box .room-item button {
+            padding: 7px 13px !important;
+            font-size: 16.9px !important;
+            border-radius: 13px;
+        }
+        @media (max-width: 480px) {
+            #login-box input,
+            #login-box > button,
+            #login-box #room-list-container {
+                width: 92% !important;
+            }
+            #login-box { padding: 13px; }
+        }
     </style>
 </head>
 <body>
