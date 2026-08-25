@@ -239,8 +239,9 @@
             gap: 6px;
         }
 
+        /* 玩家列表目前分數放大 30% (從 1rem 改為 1.3rem) */
         .list-total-score {
-            font-size: 1rem;
+            font-size: 1.3rem;
             font-weight: 700;
             color: #3182CE;
             font-family: 'Zen Maru Gothic', sans-serif;
@@ -266,9 +267,18 @@
             object-fit: cover;
         }
 
+        /* 下方說明欄位變長及字體放大 30% (高度增加、字體 19.5px) */
         #battle-log {
-            margin-top: 10px; font-size: 15px; font-weight: 300; color: #4A5568; background: #F7F9FA;
-            padding: 10px; border-radius: 12px; text-align: left; max-height: 130px; overflow-y: auto;
+            margin-top: 10px; 
+            font-size: 19.5px; 
+            font-weight: 300; 
+            color: #4A5568; 
+            background: #F7F9FA;
+            padding: 14px; 
+            border-radius: 12px; 
+            text-align: left; 
+            max-height: 200px; 
+            overflow-y: auto;
             border: 1px solid #E2E8F0;
             line-height: 1.5;
         }
@@ -384,11 +394,12 @@
         <div id="battle-log">遊戲記錄：等待開始...</div>
     </div>
 
+    <!-- 最終結算排名彈窗 (字體放大 30%) -->
     <div id="game-over-modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center;">
         <div style="background: #fff; padding: 20px; border-radius: 18px; width: 90%; max-width: 480px; max-height: 85vh; overflow-y: auto; text-align: left; border: 4px solid #FFCB05;">
-            <h2 style="text-align: center; color: #2C3E50; margin-top: 0;">🏆 最終結算排名</h2>
+            <h2 style="text-align: center; color: #2C3E50; margin-top: 0; font-size: 1.82rem;">🏆 最終結算排名</h2>
             <div id="game-over-list" style="margin-top: 12px;"></div>
-            <button onclick="location.reload()" style="width: 100%; margin-top: 15px; background-color: #3B4CCA; font-size: 15px;">返回大廳</button>
+            <button onclick="location.reload()" style="width: 100%; margin-top: 15px; background-color: #3B4CCA; font-size: 19.5px;">返回大廳</button>
         </div>
     </div>
 
@@ -531,13 +542,11 @@
             s = s.replace(/[！!]/g, '');
             s = s.replace(/獲得小牌分數\s*(\d+)\s*分/g, '獲得 $1 分');
 
-            // 調整單挑輸給了的顯示：移除括號與內部內容
             s = s.replace(
                 /【單挑[^】]*】\s*([^，（(]+?)(?:\s*\([^)]*\))?\s*輸給了\s*([^，（(]+?)(?:\s*\([^)]*\))?\s*[，,]\s*對手獲得\s*(\d+)\s*分/g,
                 '【單挑】$1 輸給了 $2，$2 獲得 $3 分'
             );
 
-            // 調整單挑擊敗了的顯示：移除括號與內部內容
             s = s.replace(
                 /【單挑[^】]*】\s*([^，（(]+?)(?:\s*\([^)]*\))?\s*擊敗了\s*([^，（(]+?)(?:\s*\([^)]*\))?\s*[，,]\s*獲得\s*(\d+)\s*分/g,
                 '【單挑】$1 擊敗了 $2，獲得 $3 分'
@@ -549,7 +558,7 @@
             );
 
             s = s.replace(
-                /【圍毆成功】\s*參與者\s*\[([^\]]+)\]\s*總分\s*(\d+)\s*大於\s*([^\s(.,。]+)\s*(?:\([^)]*\))?\s*[，,。]?\s*由牌面最小的\s*([^\s，。]+)\s*獲得\s*(\d+)\s*分[\s\S]*/g,
+                /【圍毆成功】\s*參與者\s*\[([^\]]+)\]\s*總分\s*(\d+)\s*大於\s*([^\s(.,。]+)\s*(?:\([^)]*\))?\s*[.,,。]?\s*由牌面最小的\s*([^\s，。]+)\s*獲得\s*(\d+)\s*分[\s\S]*/g,
                 (_, members, totalScore, target, winner, score) => {
                     const cleanedMembers = members.replace(/\([^)]*\)/g, '').replace(/,\s*,/g, ',').trim();
                     return `【圍毆成功】參與者 [${cleanedMembers}] 總分大於 ${target}，${winner}獲得 ${score} 分，噴火龍被圍毆擊敗，發動【同歸於盡】技能，參與玩家全部更換手牌`;
@@ -579,15 +588,16 @@
             players.sort((a, b) => b.score - a.score);
             
             const listContainer = document.getElementById('game-over-list');
+            // 最終結算排名的字體放大 30%
             listContainer.innerHTML = players.map((p, idx) => {
                 let winRate = (p.totalBattles > 0) ? Math.round((p.wins / p.totalBattles) * 100) : 0;
                 return `
-                    <div style="background: #F7F9FA; margin: 6px 0; padding: 10px; border-radius: 10px; border: 1px solid #E2E8F0;">
-                        <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 16px; color: #2D3748;">
+                    <div style="background: #F7F9FA; margin: 8px 0; padding: 13px; border-radius: 10px; border: 1px solid #E2E8F0;">
+                        <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 20.8px; color: #2D3748;">
                             <span>第 ${idx+1} 名：${p.name}</span>
                             <span style="color: #3182CE;">得分: ${p.score}</span>
                         </div>
-                        <div style="font-size: 13px; color: #4A5568; margin-top: 4px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
+                        <div style="font-size: 16.9px; color: #4A5568; margin-top: 6px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
                             <div>勝率：${winRate}% (${p.wins}/${p.totalBattles})</div>
                             <div>發起圍毆：${p.groupAttackCount} 次</div>
                             <div>棄牌(Pass)：${p.passCount} 次</div>
@@ -730,7 +740,8 @@
                         </div>
                         <div class="list-right-group">
                             <span class="list-total-score">${p.score}分</span>
-                            ${isMyTurn ? '<span style="color:#D69E2E; font-weight:700; font-size: 1.1rem;">回合中</span>' : ''}
+                            <!-- 回合中文字放大 30% (從 1.1rem 改為 1.43rem) -->
+                            ${isMyTurn ? '<span style="color:#D69E2E; font-weight:700; font-size: 1.43rem;">回合中</span>' : ''}
                         </div>
                     </li>`;
             }).join('');
