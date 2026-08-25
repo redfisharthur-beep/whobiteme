@@ -155,7 +155,6 @@ io.on('connection', (socket) => {
             p.card = room.deck.pop();
             p.knownCards = {};
             p.knownCards[p.id] = true;
-            // 重置統計數據
             p.score = 0;
             p.wins = 0;
             p.totalBattles = 0;
@@ -219,7 +218,11 @@ io.on('connection', (socket) => {
             }
         }
 
-        let pointsToAward = Math.min(actor.card.points, target.card.points);
+        // 修改：當 1 分成功打敗 8 分時，獲得 8 分；否則為原本規則的 Math.min
+        let pointsToAward = (actor.card.points === 1 && target.card.points === 8) 
+            ? 8 
+            : Math.min(actor.card.points, target.card.points);
+            
         let log = '';
 
         if (actorWin) {
@@ -227,7 +230,7 @@ io.on('connection', (socket) => {
             actor.wins += 1;
 
             if (actor.card.points === 1 && target.card.points === 8) {
-                log = `【單挑 - 逆轉勝】${actor.name} (1分) 成功打敗 ${target.name} (8分)，獲得小牌分數 ${pointsToAward} 分！`;
+                log = `【單挑 - 逆轉勝】${actor.name} (1分) 成功打敗 ${target.name} (8分)，獲得 ${pointsToAward} 分！`;
             } else {
                 log = `【單挑】${actor.name} 擊敗了 ${target.name}，獲得小牌分數 ${pointsToAward} 分！`;
             }
@@ -236,35 +239,51 @@ io.on('connection', (socket) => {
 
             if (target.card.points === 6) {
                 target.skillCount += 1;
-                log += ` 【同歸於盡】${target.name} 的 6分牌 發動技能，雙方同時更換手牌！`;
+                log += ` 【同歸於盡】${target.name} 的噴火龍在倒下時發動技能，全部同時更換手牌！`;
+                room.players.forEach(p => {
+                    if (room.deck.length > 0) {
+                        p.card = room.deck.pop();
+                        p.knownCards = {};
+                        p.knownCards[p.id] = true;
+                    }
+                });
+            } else {
                 if (room.deck.length > 0) {
-                    actor.card = room.deck.pop();
-                    actor.knownCards = {};
-                    actor.knownCards[actor.id] = true;
+                    target.card = room.deck.pop();
+                    target.knownCards = {};
+                    target.knownCards[target.id] = true;
                 }
             }
-
-            if (room.deck.length > 0) {
-                target.card = room.deck.pop();
-                target.knownCards = {};
-                target.knownCards[target.id] = true;
-            }
         } else {
-            target.score += pointsToAward;
+            let actualPointsAwarded = (actor.card.points === 8 && target.card.points === 1) ? 8 : pointsToAward;
+
+            target.score += actualPointsAwarded;
             target.wins += 1;
 
             if (actor.card.points === 8 && target.card.points === 1) {
-                log = `【單挑 - 逆轉勝】${actor.name} (8分) 輸給了 ${target.name} (1分)，對手獲得小牌分數 ${pointsToAward} 分！`;
+                log = `【單挑 - 逆轉勝】${actor.name} (${actor.card.points}分) 輸給了 ${target.name} (${target.card.points}分)，${target.name}獲得 ${actualPointsAwarded} 分！`;
             } else {
                 log = `【單挑】${actor.name} 輸給了 ${target.name}，對手獲得小牌分數 ${pointsToAward} 分！`;
             }
             io.to(actor.id).emit('play_sound', 'win');
             io.to(target.id).emit('play_sound', 'lose');
 
-            if (room.deck.length > 0) {
-                actor.card = room.deck.pop();
-                actor.knownCards = {};
-                actor.knownCards[actor.id] = true;
+            if (actor.card.points === 6) {
+                actor.skillCount += 1;
+                log += ` 【同歸於盡】${actor.name} 的噴火龍在倒下時發動技能，全部同時更換手牌！`;
+                room.players.forEach(p => {
+                    if (room.deck.length > 0) {
+                        p.card = room.deck.pop();
+                        p.knownCards = {};
+                        p.knownCards[p.id] = true;
+                    }
+                });
+            } else {
+                if (room.deck.length > 0) {
+                    actor.card = room.deck.pop();
+                    actor.knownCards = {};
+                    actor.knownCards[actor.id] = true;
+                }
             }
         }
 
@@ -302,7 +321,7 @@ io.on('connection', (socket) => {
         participants.forEach(p => revealCardBetween(p, target));
         revealCardBetween(target, actor);
 
-        let participantDetails = participants.map(p => `${p.name}(${p.card.name})`).join(', ');
+        let participantNames = participants.map(p => `${p.name}`).join(', ');
         let totalTeamPower = participants.reduce((sum, p) => sum + p.card.points, 0);
         let targetPower = target.card.points;
 
@@ -321,18 +340,25 @@ io.on('connection', (socket) => {
 
             if (target.card.points === 6) {
                 target.skillCount += 1;
-                log += ` 【同歸於盡】${target.name} 的 6分牌 在倒下時發動技能，與牌面最大的 ${highestWinner.name} 同時更換手牌！`;
+                log += ` 噴火龍被圍毆擊敗，發動【同歸於盡】技能，參與玩家全部更換手牌！`;
+                participants.forEach(p => {
+                    if (room.deck.length > 0) {
+                        p.card = room.deck.pop();
+                        p.knownCards = {};
+                        p.knownCards[p.id] = true;
+                    }
+                });
                 if (room.deck.length > 0) {
-                    highestWinner.card = room.deck.pop();
-                    highestWinner.knownCards = {};
-                    highestWinner.knownCards[highestWinner.id] = true;
+                    target.card = room.deck.pop();
+                    target.knownCards = {};
+                    target.knownCards[target.id] = true;
                 }
-            }
-
-            if (room.deck.length > 0) {
-                target.card = room.deck.pop();
-                target.knownCards = {};
-                target.knownCards[target.id] = true;
+            } else {
+                if (room.deck.length > 0) {
+                    target.card = room.deck.pop();
+                    target.knownCards = {};
+                    target.knownCards[target.id] = true;
+                }
             }
         } else {
             if (target.card.isHunter) {
@@ -341,7 +367,7 @@ io.on('connection', (socket) => {
 
             if (target.card.isBacteria) {
                 target.wins += 1;
-                log = `【圍毆失敗】參與者 [${participantDetails}] 圍攻 999分牌 失敗！此牌無法被戰勝。`;
+                log = `【圍毆失敗】參與者 [${participantNames}] 圍攻 999分牌 失敗！此牌無法被戰勝。`;
                 participants.forEach(p => io.to(p.id).emit('play_sound', 'lose'));
                 io.to(target.id).emit('play_sound', 'win');
             } else if (totalTeamPower > targetPower) {
@@ -351,29 +377,36 @@ io.on('connection', (socket) => {
 
                 participants.forEach(p => p.wins += 1);
                 
-                log = `【圍毆成功】參與者 [${participantDetails}] 總分 ${totalTeamPower} 大於 ${target.name} (${targetPower})！由牌面最小的 ${lowestWinner.name} 獲得 ${target.card.points} 分！`;
+                log = `【圍毆成功】參與者 [${participantNames}] 總分大於 ${target.name}，${lowestWinner.name} 獲得 ${target.card.points} 分！`;
                 
                 participants.forEach(p => io.to(p.id).emit('play_sound', 'win'));
                 io.to(target.id).emit('play_sound', 'lose');
 
                 if (target.card.points === 6) {
                     target.skillCount += 1;
-                    log += ` 【同歸於盡】${target.name} 的 6分牌 在倒下時發動技能，與牌面最小的 ${lowestWinner.name} 同時更換手牌！`;
+                    log += ` 噴火龍被圍毆擊敗，發動【同歸於盡】技能，參與玩家全部更換手牌！`;
+                    participants.forEach(p => {
+                        if (room.deck.length > 0) {
+                            p.card = room.deck.pop();
+                            p.knownCards = {};
+                            p.knownCards[p.id] = true;
+                        }
+                    });
                     if (room.deck.length > 0) {
-                        lowestWinner.card = room.deck.pop();
-                        lowestWinner.knownCards = {};
-                        lowestWinner.knownCards[lowestWinner.id] = true;
+                        target.card = room.deck.pop();
+                        target.knownCards = {};
+                        target.knownCards[target.id] = true;
                     }
-                }
-
-                if (room.deck.length > 0) {
-                    target.card = room.deck.pop();
-                    target.knownCards = {};
-                    target.knownCards[target.id] = true;
+                } else {
+                    if (room.deck.length > 0) {
+                        target.card = room.deck.pop();
+                        target.knownCards = {};
+                        target.knownCards[target.id] = true;
+                    }
                 }
             } else {
                 target.wins += 1;
-                log = `【圍毆失敗】參與者 [${participantDetails}] 總分 ${totalTeamPower} 不大於被圍毆者 ${targetPower}，${target.name} 成功守住！`;
+                log = `【圍毆失敗】參與者 [${participantNames}] 總分 ${totalTeamPower} 不大於被圍毆者 ${targetPower}，${target.name} 成功守住！`;
                 participants.forEach(p => io.to(p.id).emit('play_sound', 'lose'));
                 io.to(target.id).emit('play_sound', 'win');
             }
@@ -432,7 +465,7 @@ io.on('connection', (socket) => {
             }, 5000);
 
         } else if (actionType === 'discard') {
-            actor.passCount += 1; // 棄牌計入 pass / 換牌動作統計
+            actor.passCount += 1;
             const isThreePoint = (actor.card.points === 3);
             actor.score -= 1;
             
