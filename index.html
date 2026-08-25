@@ -29,8 +29,9 @@
             width: min(100%, 1100px);
         }
 
+        /* 調整首頁圖檔容器寬度佔畫面 80% 並適配所有 3C 設備 */
         #login-box .header-logo-container {
-            width: 70%;
+            width: 80%;
             max-width: none;
             margin: 5px auto 18px auto;
             display: flex;
@@ -56,7 +57,7 @@
             .box { margin: 0 auto; border-radius: 0; border-left: 0; border-right: 0; }
             #login-box { padding-top: 10px; }
             #login-box .header-logo-container {
-                width: 70%;
+                width: 80%;
                 margin: 5px auto 16px auto;
             }
         }
@@ -544,7 +545,7 @@
 
             s = s.replace(
                 /\s*【同歸於盡】\s*([^\s..]+)\s*的\s*\d+\s*分牌\s*發動技能[.,，]?\s*/g,
-                '，$1 發動技能【同歸於盡】，'
+                '，$1 發動技能【同歸於盡】、'
             );
 
             s = s.replace(
