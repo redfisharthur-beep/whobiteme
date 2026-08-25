@@ -29,7 +29,6 @@
             width: min(100%, 1100px);
         }
 
-        /* 調整首頁圖檔容器寬度佔畫面 80% 並適配所有 3C 設備 */
         #login-box .header-logo-container {
             width: 80%;
             max-width: none;
@@ -239,7 +238,6 @@
             gap: 6px;
         }
 
-        /* 玩家列表目前分數放大 30% (從 1rem 改為 1.3rem) */
         .list-total-score {
             font-size: 1.3rem;
             font-weight: 700;
@@ -267,7 +265,6 @@
             object-fit: cover;
         }
 
-        /* 下方說明欄位變長及字體放大 30% (高度增加、字體 19.5px) */
         #battle-log {
             margin-top: 10px; 
             font-size: 19.5px; 
@@ -332,7 +329,6 @@
             box-shadow: none;
         }
 
-        /* 首頁整體放大 30%：文字、輸入框、按鈕與對戰列表同步放大 */
         #login-box {
             max-width: 1430px;
             padding: 19.5px;
@@ -388,64 +384,49 @@
             #login-box { padding: 13px; }
         }
 
-
-        /* =========================
-           遊戲等待 / 遊戲內介面放大設定
-           ========================= */
-
-        /* 等待遊戲開始：字體放大 30% */
         #game-box #card-display {
-            font-size: 23.4px; /* 18px × 1.3 */
+            font-size: 23.4px;
         }
 
-        /* 遊戲內卡牌名稱放大 20% */
         #game-box .pokemon-name {
             font-size: 21.6px;
         }
 
-        /* 遊戲內卡牌數字 / 分數放大 20% */
         #game-box .din-score {
             font-size: 45.6px;
         }
 
-        /* 玩家列表名稱縮小 15%；數字與圖片維持原尺寸 */
         #game-box .list-player-name {
-            font-size: 1.224rem; /* 1.44rem × 0.85 */
+            font-size: 1.224rem;
         }
 
-        /* 玩家手牌數字放大 20% */
         #game-box .list-score-tag {
-            font-size: 2.184em; /* 1.82em × 1.2 */
+            font-size: 2.184em;
         }
 
-        /* 玩家總分放大 20% */
         #game-box .list-total-score {
-            font-size: 1.56rem; /* 1.3rem × 1.2 */
+            font-size: 1.56rem;
         }
 
-        /* 選擇對手字體放大 30% */
         #game-box #target-instruction {
-            font-size: 16.9px !important; /* 13px × 1.3 */
+            font-size: 16.9px !important;
             line-height: 1.4;
         }
 
-        /* 選擇對手圖示同步放大 */
         #game-box #target-instruction img {
             width: 20.8px !important;
             height: 20.8px !important;
             margin-right: 5px !important;
         }
 
-        /* 操作按鈕：單挑、圍毆、換牌、Pass 字體放大 20%，按鈕同步放大 */
         #game-box #action-panel button {
-            font-size: 18px !important; /* 15px × 1.2 */
+            font-size: 18px !important;
             padding: 12px 19px !important;
             min-height: 48px;
             border-radius: 14px;
             margin: 6px 5px;
         }
 
-        /* 操作區塊本身同步增加空間 */
         #game-box #action-panel {
             padding: 12px !important;
             border-radius: 14px !important;
@@ -455,7 +436,6 @@
             gap: 7px !important;
         }
 
-        /* 手機版保持可讀性，避免四顆按鈕擠壓 */
         @media (max-width: 480px) {
             #game-box #card-display {
                 font-size: 23.4px;
@@ -484,9 +464,6 @@
             }
         }
 
-
-
-        /* 下方遊戲說明流程：與上方介面相同字體 */
         #battle-log {
             font-family: 'Zen Maru Gothic', sans-serif !important;
             font-weight: 400 !important;
@@ -501,23 +478,20 @@
             box-shadow: 0 5px 16px rgba(120, 120, 120, 0.08);
         }
 
-        /* 一般回合倒數秒數放大 30% */
         #game-box #timer-text {
             font-family: 'M PLUS Rounded 1c', 'Zen Maru Gothic', sans-serif !important;
-            font-size: 18.2px !important; /* 14px × 1.3 */
+            font-size: 18.2px !important;
             font-weight: 700 !important;
             letter-spacing: 1px;
             margin-left: 8px !important;
         }
 
-        /* 圍毆等待倒數秒數也同步放大 30% */
         #game-box #group-timer-text {
             font-family: 'M PLUS Rounded 1c', 'Zen Maru Gothic', sans-serif !important;
-            font-size: 15.6px !important; /* 12px × 1.3 */
+            font-size: 15.6px !important;
             font-weight: 700 !important;
             letter-spacing: 0.8px;
         }
-
     </style>
 </head>
 <body>
@@ -581,7 +555,6 @@
         <div id="battle-log">遊戲記錄：等待開始...</div>
     </div>
 
-    <!-- 最終結算排名彈窗 (字體放大 30%) -->
     <div id="game-over-modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center;">
         <div style="background: #fff; padding: 20px; border-radius: 18px; width: 90%; max-width: 480px; max-height: 85vh; overflow-y: auto; text-align: left; border: 4px solid #FFCB05;">
             <h2 style="text-align: center; color: #2C3E50; margin-top: 0; font-size: 1.82rem;">🏆 最終結算排名</h2>
@@ -730,7 +703,7 @@
             s = s.replace(/獲得小牌分數\s*(\d+)\s*分/g, '獲得 $1 分');
 
             s = s.replace(
-                /【單挑[^】]*】\s*([^，（(]+?)(?:\s*\([^)]*\))?\s*輸給了\s*([^，（(]+?)(?:\s*\([^)]*\))?\s*[，,]\s*對手獲得\s*(\d+)\s*分/g,
+                /【單挑[^】]*】\s*([^，（(]+?)(?:\s*\([^)]*\))?\s*輸給了\s*([^，（(]+?)(?:\s*\([^)]*\))?\s*[.,,]\s*對手獲得\s*(\d+)\s*分/g,
                 '【單挑】$1 輸給了 $2，$2 獲得 $3 分'
             );
 
@@ -755,7 +728,7 @@
             s = s.replace(/由牌面最小的\s*/g, '');
             s = s.replace(/\s*分牌\s*/g, '分牌 ');
             s = s.replace(/\s{2,}/g, ' ').trim();
-            s = s.replace(/\s+([，.])/g, '$1');
+            s = s.replace(/\s+([.,])/g, '$1');
             s = s.replace(/，{2,}/g, '，');
 
             return s;
@@ -775,7 +748,6 @@
             players.sort((a, b) => b.score - a.score);
             
             const listContainer = document.getElementById('game-over-list');
-            // 最終結算排名的字體放大 30%
             listContainer.innerHTML = players.map((p, idx) => {
                 let winRate = (p.totalBattles > 0) ? Math.round((p.wins / p.totalBattles) * 100) : 0;
                 return `
@@ -927,7 +899,6 @@
                         </div>
                         <div class="list-right-group">
                             <span class="list-total-score">${p.score}分</span>
-                            <!-- 目前回合：綠色打勾圖示 -->
                             ${isMyTurn ? '<span title="目前回合" aria-label="目前回合" style="display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; background:#38A169; color:#FFFFFF; font-family:Arial,sans-serif; font-size:19px; font-weight:900; line-height:1; box-shadow:0 2px 5px rgba(56,161,105,.28);">✓</span>' : ''}
                         </div>
                     </li>`;

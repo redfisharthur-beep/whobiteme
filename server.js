@@ -212,13 +212,13 @@ io.on('connection', (socket) => {
             if (actor.card.points === 1 && target.card.points === 8) {
                 actorWin = true;
             } else if (actor.card.points === 8 && target.card.points === 1) {
-                actorWin = false;
+                actorWin = false; // 8分牌挑戰1分牌，8分牌會輸
             } else {
                 actorWin = (actor.card.points >= target.card.points);
             }
         }
 
-        let pointsToAward = (actor.card.points === 1 && target.card.points === 8) 
+        let pointsToAward = ((actor.card.points === 1 && target.card.points === 8) || (actor.card.points === 8 && target.card.points === 1))
             ? 8 
             : Math.min(actor.card.points, target.card.points);
             
@@ -238,7 +238,6 @@ io.on('connection', (socket) => {
 
             if (target.card.points === 6) {
                 target.skillCount += 1;
-                // [已修改] 改為參賽的兩人更換手牌
                 log += ` 【同歸於盡】${target.name} 的 6 分牌在倒下時發動技能，雙方同時更換手牌！`;
                 [actor, target].forEach(p => {
                     if (room.deck.length > 0) {
@@ -255,13 +254,11 @@ io.on('connection', (socket) => {
                 }
             }
         } else {
-            let actualPointsAwarded = (actor.card.points === 8 && target.card.points === 1) ? 8 : pointsToAward;
-
-            target.score += actualPointsAwarded;
+            target.score += pointsToAward;
             target.wins += 1;
 
             if (actor.card.points === 8 && target.card.points === 1) {
-                log = `【單挑 - 逆轉勝】${actor.name} (${actor.card.points}分) 輸給了 ${target.name} (${target.card.points}分)，${target.name}獲得 ${actualPointsAwarded} 分！`;
+                log = `【單挑 - 逆轉勝】${actor.name} (8分) 挑戰 ${target.name} (1分) 失敗！${target.name} 獲得 ${pointsToAward} 分！`;
             } else {
                 log = `【單挑】${actor.name} 輸給了 ${target.name}，對手獲得小牌分數 ${pointsToAward} 分！`;
             }
@@ -270,7 +267,6 @@ io.on('connection', (socket) => {
 
             if (actor.card.points === 6) {
                 actor.skillCount += 1;
-                // [已修改] 改為參賽的兩人更換手牌
                 log += ` 【同歸於盡】${actor.name} 的 6 分牌在倒下時發動技能，雙方同時更換手牌！`;
                 [actor, target].forEach(p => {
                     if (room.deck.length > 0) {
@@ -328,7 +324,7 @@ io.on('connection', (socket) => {
 
         let log = '';
 
-        if (totalTeamPower < 5 && !target.card.isBacteria) {
+        if (totalTeamPower < 7 && !target.card.isBacteria) {
             participants.sort((a, b) => b.card.points - a.card.points);
             let highestWinner = participants[0];
             highestWinner.score += target.card.points;
