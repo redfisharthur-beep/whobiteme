@@ -496,6 +496,14 @@
 </head>
 <body>
 
+    <!-- 音樂控制懸浮按鈕（用來解鎖瀏覽器自動播放限制並切換音樂狀態） -->
+    <div id="music-control-panel" style="position: fixed; top: 10px; right: 10px; z-index: 9999; background: rgba(0,0,0,0.6); padding: 6px 12px; border-radius: 20px; color: white; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 5px;" onclick="toggleBGM()">
+        <span>🎵 配樂：<span id="music-status-text">點擊開啟</span></span>
+    </div>
+
+    <!-- 背景音樂 Audio 元素 -->
+    <audio id="bgm-audio" src="/bite-game/sounds/pikachu.mp3" loop preload="auto"></audio>
+
     <div id="login-box" class="box">
         <div class="header-logo-container">
             <div class="header-logo-wrapper">
@@ -571,6 +579,35 @@
         let timeLeft = 10, groupTimeLeft = 5;
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const bgmAudio = document.getElementById('bgm-audio');
+        let isBgmPlaying = false;
+
+        // 配樂控制與自動解鎖
+        function toggleBGM() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            if (bgmAudio.paused) {
+                bgmAudio.play().then(() => {
+                    isBgmPlaying = true;
+                    document.getElementById('music-status-text').innerText = '播放中';
+                }).catch(e => {
+                    console.log("播放失敗: ", e);
+                });
+            } else {
+                bgmAudio.pause();
+                isBgmPlaying = false;
+                document.getElementById('music-status-text').innerText = '已暫停';
+            }
+        }
+
+        // 當使用者在頁面上點擊或操作時，若音樂尚未播放則自動嘗試啟動（符合瀏覽器規則）
+        document.body.addEventListener('click', function initBGMOnce() {
+            if (!isBgmPlaying && bgmAudio.paused) {
+                bgmAudio.play().then(() => {
+                    isBgmPlaying = true;
+                    document.getElementById('music-status-text').innerText = '播放中';
+                }).catch(() => {});
+            }
+        }, { once: true });
 
         const pokemonDataMapping = {
             "1分牌": { img: "/bite-game/1.png", points: 1, pokemonName: "可達鴨", displayNo: "1", themeClass: "theme-1" },
@@ -774,6 +811,14 @@
         function showGameUI() {
             document.getElementById('login-box').style.display = 'none';
             document.getElementById('game-box').style.display = 'block';
+            
+            // 進入遊戲中自動播放音樂（若尚未播放）
+            if (bgmAudio.paused) {
+                bgmAudio.play().then(() => {
+                    isBgmPlaying = true;
+                    document.getElementById('music-status-text').innerText = '播放中';
+                }).catch(() => {});
+            }
         }
 
         function startGame() { socket.emit('start_game', myRoomCode); }
